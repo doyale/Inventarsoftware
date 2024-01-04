@@ -4,17 +4,34 @@ https://www.tutorialspoint.com/create-xml-documents-using-python
 """
 
 import xml.etree.ElementTree as ET
+import time
 
-def editEntry():
-    #TODO
-    return None
+db = "chem_db.xml"
+
+def editEntry(id, **kwargs):
+    tree = ET.parse(db)
+    root = tree.getroot()
+    chem_id = None
+    for chem_id in root.iter("chem_id"):
+        if chem_id.text == id:
+            break
+    if chem_id != None:
+        for key, value in kwargs.items():
+            for i in chem_id.iter(key):
+                if i.tag == key:
+                    break
+            i.text = value
+    tree.write(db)
+
 
 def addEntry(id, name, cas = None, formula = None, qty = None, purity = None,
              supplier = None, date = None, mass = None, mp = None, bp = None, density = None,
              location = None, haz = None, prec = None, ghs = None, misc = None):
     # creation of all elements
-    root = ET.Element("root")
+    tree = ET.parse(db)
+    root = tree.getroot()
     chem_id = ET.SubElement(root, "chem_id")
+    #root.append(chem_id)
     chem_name = ET.SubElement(chem_id, "chem_name")
     chem_cas = ET.SubElement(chem_id, "chem_cas")
     chem_formula = ET.SubElement(chem_id, "chem_formula")
@@ -52,11 +69,11 @@ def addEntry(id, name, cas = None, formula = None, qty = None, purity = None,
     chem_misc.text = misc
 
     #write to XML file
-    ET.ElementTree(root).write("chem_db.xml")
+    ET.ElementTree(root).write(db)
     print(f"saved entry {id} to the database.")
 
 def readEntries():
-    tree = ET.parse("chem_db.xml")
+    tree = ET.parse(db)
     root = tree.getroot()
     data_total = []
     for child in root:
@@ -66,4 +83,7 @@ def readEntries():
         data_total.append(data)
     return data_total
 
-print(readEntries())
+#test code
+start_time = time.time()
+editEntry("A1", chem_cas="12345", chem_mass="testmass")
+print("--- %s seconds ---" % (time.time() - start_time))

@@ -9,6 +9,8 @@ import tkinter as tk
 import tkinter.messagebox as popup
 from tkinter import ttk
 import time
+import random
+from data_management import addEntry, readEntries, editEntry
 
 #style variables
 banner_height = 2
@@ -35,6 +37,8 @@ def newEntry():
     #TODO function run on "new entry" button press
     #test code
     popup.showwarning(title=None, message="Under development")
+    addEntry(str(random.randint(1, 8237564)), str(random.randint(1, 8237564)), str(random.randint(1, 8237564)), str(random.randint(1, 8237564)), str(random.randint(1, 8237564)))
+    db_table.update_idletasks()
 
 def query():
     #TODO
@@ -89,11 +93,13 @@ for i in enumerate(db_table_headers):
     db_table.heading(db_table_headers[i[0]], text=db_table_header_titles[i[0]])
     db_table.column(db_table_headers[i[0]], width=db_table_column_width[i[0]], stretch=False)
 #test data
-contacts = []
-for n in range(1, 10100, 98):
-    contacts.append((f'A {n}', f'Chemical {n}', f'000-{n}-0', f'{n} ml', f'Supplier {n}', f'{n} days ago', f'Cabinet {n}'))
-for contact in contacts:
-    db_table.insert('', tk.END, values=contact)
+chems = readEntries()
+for chem, _ in enumerate(chems):
+    print(chem)
+    #the parts of the data to be displayed in the table
+    chem_display = chems[chem][0], chems[chem][1], chems[chem][2], chems[chem][4], chems[chem][6], chems[chem][7], chems[chem][12]
+    db_table.insert('', tk.END, values=chem_display)
+
 db_table.bind('<<TreeviewSelect>>', dbTableItemSelected)
 db_table.pack()
 db_table_frame.pack(anchor="nw")
