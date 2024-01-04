@@ -32,7 +32,7 @@ db_table_headers = ("db_id", "db_name", "db_cas", "db_qty", "db_supplier", "db_d
 
 #command functions:
 def newEntry():
-    #TODO
+    #TODO function run on "new entry" button press
     #test code
     popup.showwarning(title=None, message="Under development")
 
