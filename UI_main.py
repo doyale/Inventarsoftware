@@ -8,7 +8,6 @@ https://www.pythontutorial.net/tkinter/tkinter-treeview/
 import tkinter as tk
 import tkinter.messagebox as popup
 from tkinter import ttk
-import xml.etree.ElementTree as ET
 import time
 
 #style variables
