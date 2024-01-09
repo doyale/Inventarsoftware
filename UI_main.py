@@ -1,3 +1,8 @@
+import sys, os
+if sys.executable.endswith('pythonw.exe'):
+    sys.stdout = open(os.devnull, 'w')
+    sys.stderr = open(os.path.join(os.getenv('TEMP'), 'stderr-{}'.format(os.path.basename(sys.argv[0]))), "w")
+    
 """
 Resources used:
 https://realpython.com/python-gui-tkinter/
@@ -8,11 +13,10 @@ https://www.pythontutorial.net/tkinter/tkinter-treeview/
 import tkinter as tk
 import tkinter.messagebox as popup
 from tkinter import ttk
-import random
-from data_management import addEntry, readEntries, editEntry, readEntry
+from data_management import readEntries, editEntry, readEntry, deleteEntry
 from query import dbQuery
 import tkinter.simpledialog as dialog
-import time
+from new_entry_window import newEntry
 
 #style variables
 banner_height = 2
@@ -23,17 +27,19 @@ banner_spacer_width = 3
 db_table_column_width = 140
 db_table_column_width = (50, 250, 120, 70, 100, 80, 120)
 info_bg = "white"
-db_table_height = 49
+db_table_height = 51
 info_entry_font = ("Seoge UI", 11)
 entry_width = 53
 entry_height = 10
 info_spacer_height = 153
+spacer_dimensions = 18
 
 #language specific variables
 new_entry_btn_text = "New Entry"
 query_btn_text = "Query"
-export_btn_text = "Export"
+refresh_btn_text = "Refresh Table"
 print_label_btn_text = "Print"
+delete_entry_btn_text = "Delete entry"
 db_window_title = "Chemical Database"
 db_table_header_titles = ("ID", "Name", "CAS-No.", "Quantity", "Supplier", "Date received", "Storage location")
 db_table_headers = ("db_id", "db_name", "db_cas", "db_qty", "db_supplier", "db_date", "db_location")
@@ -54,27 +60,19 @@ haz_title_name = "Hazard statements: "
 prec_title_name = "Precautionary statements: "
 ghs_title_name = "GHS Symbols: "
 misc_title_name = "Additional info: "
+edit_btn_text = "Edit selected entry"
+
 
 
 #other variables
 
 #command functions:
-def newEntry():
-    #TODO function run on "new entry" button press
-    #test code
-    #popup.showwarning(title=None, message="Under development")
-    addEntry(str(random.randint(1, 99)), str(random.randint(1, 99)), str(random.randint(1, 99)), str(random.randint(1, 99)), str(random.randint(1, 99)),
-             str(random.randint(1, 99)), str(random.randint(1, 99)), str(random.randint(1, 99)), str(random.randint(1, 99)), str(random.randint(1, 99)),
-             str(random.randint(1, 99)), str(random.randint(1, 99)), str(random.randint(1, 99)), str(random.randint(1, 99)), str(random.randint(1, 99)),
-             str(random.randint(1, 99)), str(random.randint(1, 99)))
+def newEntryEvent():
     global db_table
     global db_table_frame
-    db_table.destroy()
-    db_table_frame.destroy()
-    db_table, db_table_frame = initTable()
+    newEntry()
 
 def query():
-    #TODO
     global db_table
     global db_table_frame
     input = dialog.askstring("Query", "Please enter your search term:")
@@ -82,9 +80,12 @@ def query():
     db_table_frame.destroy()
     db_table, db_table_frame = initTable("query", input)
 
-def export():
-    #TODO
-    popup.showwarning(title=None, message="Under development")
+def refresh():
+    global db_table
+    global db_table_frame
+    db_table.destroy()
+    db_table_frame.destroy()
+    db_table, db_table_frame = initTable()
 
 def printLabel():
     #TODO
@@ -97,7 +98,6 @@ def dbTableItemSelected(event):
         #get chem ID
         id = db_table.item(db_table.selection())["values"][0]
         chem = readEntry(id)
-        print(chem)
         id_entry.delete(0, tk.END)
         id_entry.insert(0, chem[0])
         name_entry.delete(0, tk.END)
@@ -135,10 +135,45 @@ def dbTableItemSelected(event):
     except:
         None
     
+def editEntryEvent():
+    global db_table
+    global db_table_frame
+    id = db_table.item(db_table.selection())["values"][0]
+    selection = db_table.selection()
+    editEntry(id,
+              chem_name=name_entry.get(),
+              chem_cas=cas_entry.get(),
+              chem_formula=formula_entry.get(),
+              chem_qty=qty_entry.get(),
+              chem_purity=purity_entry.get(),
+              chem_supplier=supplier_entry.get(),
+              chem_date=date_entry.get(),
+              chem_mass=mass_entry.get(),
+              chem_mp=mp_entry.get(),
+              chem_bp=bp_entry.get(),
+              chem_density=density_entry.get(),
+              chem_location=location_entry.get(),
+              chem_haz=haz_entry.get("1.0",'end-1c'),
+              chem_prec=prec_entry.get("1.0",'end-1c'),
+              chem_ghs=ghs_entry.get(),
+              chem_misc=misc_entry.get())
+    print("Entry edited.")
+    #reload the table
+    db_table.destroy()
+    db_table_frame.destroy()
+    db_table, db_table_frame = initTable()
+    db_table.selection_set(selection)
+    db_table.focus_set()
+    db_table.focus(selection)
 
-
-
-
+def deleteEntryEvent():
+    global db_table
+    global db_table_frame
+    id = db_table.item(db_table.selection())["values"][0]
+    deleteEntry(id)
+    db_table.destroy()
+    db_table_frame.destroy()
+    db_table, db_table_frame = initTable()
 
 #initialize the database main window
 db_window = tk.Tk()
@@ -148,13 +183,16 @@ db_window.resizable(width=False, height=False)
 #initialize database window menu banner
 banner_frame = tk.Frame(border=5)
 left_spacer = tk.Frame(width=banner_spacer_width, height=banner_height, master=banner_frame)
-new_entry_button = tk.Button(text=new_entry_btn_text, width=banner_width, height=banner_height, bg=banner_bg, fg=banner_fg, master=banner_frame, command=newEntry)
+new_entry_button = tk.Button(text=new_entry_btn_text, width=banner_width, height=banner_height, bg=banner_bg, fg=banner_fg, master=banner_frame, command=newEntryEvent)
 new_entry_spacer = tk.Frame(width=banner_spacer_width, height=banner_height, master=banner_frame)
 query_button = tk.Button(text=query_btn_text, width=banner_width, height=banner_height, bg=banner_bg, fg=banner_fg, master=banner_frame, command=query)
 query_spacer = tk.Frame(width=banner_spacer_width, height=banner_height, master=banner_frame)
-export_button = tk.Button(text=export_btn_text, width=banner_width, height=banner_height, bg=banner_bg, fg=banner_fg, master=banner_frame, command=export)
-export_spacer = tk.Frame(width=banner_spacer_width, height=banner_height, master=banner_frame)
+refresh_button = tk.Button(text=refresh_btn_text, width=banner_width, height=banner_height, bg=banner_bg, fg=banner_fg, master=banner_frame, command=refresh)
+refresh_spacer = tk.Frame(width=banner_spacer_width, height=banner_height, master=banner_frame)
 print_label_button = tk.Button(text=print_label_btn_text, width=banner_width, height=banner_height, bg=banner_bg, fg=banner_fg, master=banner_frame, command=printLabel)
+print_label_spacer = tk.Frame(width=banner_spacer_width, height=banner_height, master=banner_frame)
+delete_entry_button = tk.Button(text=delete_entry_btn_text, width=banner_width, height=banner_height, bg=banner_bg, fg=banner_fg, master=banner_frame, command=deleteEntryEvent)
+
 banner_frame.pack(anchor="w")
 
 def initTable(state:str = None, arg = None):
@@ -188,11 +226,11 @@ right_frame = tk.Frame()
 #initialize the label image section
 #TODO: Add label design logic
 label_frame = tk.Frame(master=right_frame, width=590, height=315, bg="red")
-label_spacer = tk.Frame(master=right_frame, height=18)
+label_spacer = tk.Frame(master=right_frame, height=spacer_dimensions)
+info_spacer_left = tk.Frame(master=right_frame, width=spacer_dimensions)
 
 #initialize the info section and frame
 info_frame = tk.Frame(master=right_frame)
-info_spacer_left = tk.Frame(master=right_frame, width=18)
 
 #Header section
 title_frame = tk.Frame(border=5, master=info_frame, background=info_bg)
@@ -237,15 +275,21 @@ prec_entry = tk.Text(master=entry_frame, background=info_bg, font=info_entry_fon
 ghs_entry = tk.Entry(master=entry_frame, background=info_bg, font=info_entry_font, width=entry_width)
 misc_entry = tk.Entry(master=entry_frame, background=info_bg, font=info_entry_font, width=entry_width)
 
+#initialize the edit entry button
+edit_entry_spacer = tk.Frame(master=right_frame, height=5)
+edit_entry_button = tk.Button(master=right_frame, background=banner_bg, foreground=banner_fg, text=edit_btn_text, width=83, pady=10, command=editEntryEvent)
+
 #pack database window menu banner
 left_spacer.pack(side=tk.LEFT)
 new_entry_button.pack(side=tk.LEFT)
 new_entry_spacer.pack(side=tk.LEFT)
 query_button.pack(side=tk.LEFT)
 query_spacer.pack(side=tk.LEFT)
-export_button.pack(side=tk.LEFT)
-export_spacer.pack(side=tk.LEFT)
+refresh_button.pack(side=tk.LEFT)
+refresh_spacer.pack(side=tk.LEFT)
 print_label_button.pack(side=tk.LEFT)
+print_label_spacer.pack(side=tk.LEFT)
+delete_entry_button.pack(side=tk.LEFT)
 
 # initialize the database table and surrounding frame
 global db_table
@@ -264,6 +308,8 @@ info_spacer_left.pack(side=tk.LEFT)
 #pack label image section
 label_frame.pack(side=tk.TOP, anchor="nw")
 label_spacer.pack()
+edit_entry_button.pack(side=tk.BOTTOM)
+edit_entry_spacer.pack(side=tk.BOTTOM)
 
 #pack info section
 info_frame.pack(side=tk.RIGHT, anchor="se")
