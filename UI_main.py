@@ -193,6 +193,7 @@ print_label_button = tk.Button(text=print_label_btn_text, width=banner_width, he
 print_label_spacer = tk.Frame(width=banner_spacer_width, height=banner_height, master=banner_frame)
 delete_entry_button = tk.Button(text=delete_entry_btn_text, width=banner_width, height=banner_height, bg=banner_bg, fg=banner_fg, master=banner_frame, command=deleteEntryEvent)
 
+
 banner_frame.pack(anchor="w")
 
 def initTable(state:str = None, arg = None):
