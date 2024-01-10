@@ -60,16 +60,25 @@ def pubChemLookup(lookup_name):
                     mass = property['Section'][0]['Information'][0]["Value"]["StringWithMarkup"][0]["String"] #molar mass
                 elif property["TOCHeading"] == "Experimental Properties":
                     for exp in property['Section']:
-                        if exp["TOCHeading"] == "Melting Point": #Melting point
-                            for melting_point in exp["Information"]:
-                                if melting_point["Value"]["StringWithMarkup"][0]["String"][-1:] == "C":
-                                    mp = melting_point["Value"]["StringWithMarkup"][0]["String"]
-                        if exp["TOCHeading"] == "Boiling Point": #Boiling point
-                            for boiling_point in exp["Information"]:
-                                if boiling_point["Value"]["StringWithMarkup"][0]["String"][-1:] == "C":
-                                    bp = boiling_point["Value"]["StringWithMarkup"][0]["String"]
+                        try:
+                            if exp["TOCHeading"] == "Melting Point": #Melting point
+                                for melting_point in exp["Information"]:
+                                    if "StringWithMarkup" in melting_point["Value"]:
+                                        if melting_point["Value"]["StringWithMarkup"][0]["String"][-1:] == "C":
+                                            mp = melting_point["Value"]["StringWithMarkup"][0]["String"]
+                        except:
+                            print("Melting point could not be fetched.")
+                        try:
+                            if exp["TOCHeading"] == "Boiling Point": #Boiling point
+                                for boiling_point in exp["Information"]:
+                                    if "StringWithMarkup" in boiling_point["Value"]:
+                                        if boiling_point["Value"]["StringWithMarkup"][0]["String"][-1:] == "C":
+                                            bp = boiling_point["Value"]["StringWithMarkup"][0]["String"]
+                        except:
+                            print("Boiling point could not be fetched.")
         
     return name, mass, mp, bp, ghs, haz, prec
 
-lookup_name = "decanol"
-print(pubChemLookup(lookup_name))
+if __name__ == "__main__":
+    lookup_name = input("debug, enter name to search on pubchem: ")
+    print(pubChemLookup(lookup_name))
