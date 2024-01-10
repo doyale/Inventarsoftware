@@ -5,6 +5,7 @@ haz_min_percentage = 50 #The minimum percentage of vendors who list a specific h
 
 def pubChemLookup(lookup_name):
     print(f"Looking up {lookup_name} on PubChem...")
+    t = time.thread_time()
     ghs = []
     haz = []
     prec = []
@@ -14,6 +15,7 @@ def pubChemLookup(lookup_name):
     bp = None
 
     attempt = 1
+    print(f"Start: {time.thread_time() - t}")
     while True:
         try:
             pug_rest_url = f"https://pubchem.ncbi.nlm.nih.gov/rest/pug/substance/name/{lookup_name}/cids/json" #PUG REST API URL
@@ -29,6 +31,7 @@ def pubChemLookup(lookup_name):
             print(f"Could not connect to Pubchem (Attempt {attempt}). Rate limit may be reached or internet may be unstable. Retrying in {attempt*3} seconds...")
             time.sleep(attempt*3)
             attempt += 1
+    print(f"Data fetched: {time.thread_time() - t}")
 
 
     for item in sections:
@@ -76,9 +79,11 @@ def pubChemLookup(lookup_name):
                                             bp = boiling_point["Value"]["StringWithMarkup"][0]["String"]
                         except:
                             print("Boiling point could not be fetched.")
-        
+    
+    print(f"Done: {time.thread_time() - t}")
     return name, mass, mp, bp, ghs, haz, prec
 
 if __name__ == "__main__":
     lookup_name = input("debug, enter name to search on pubchem: ")
     print(pubChemLookup(lookup_name))
+    
