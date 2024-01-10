@@ -10,6 +10,8 @@ def pubChemLookup(lookup_name):
     prec = []
     name = None
     mass = None
+    mp = None
+    bp = None
 
     attempt = 1
     while True:
@@ -52,10 +54,22 @@ def pubChemLookup(lookup_name):
                             precaution = precaution[4:]
                         prec.append(precaution)
         elif item["TOCHeading"] == "Chemical and Physical Properties": #Properties section
-            properties_section = item
-            mass = properties_section["Section"][0]['Section'][0]['Information'][0]["Value"]["StringWithMarkup"][0]["String"] #molar mass
+            properties_section = item["Section"]
+            for property in properties_section:
+                if property["TOCHeading"] == "Computed Properties":
+                    mass = property['Section'][0]['Information'][0]["Value"]["StringWithMarkup"][0]["String"] #molar mass
+                elif property["TOCHeading"] == "Experimental Properties":
+                    for exp in property['Section']:
+                        if exp["TOCHeading"] == "Melting Point": #Melting point
+                            for melting_point in exp["Information"]:
+                                if melting_point["Value"]["StringWithMarkup"][0]["String"][-1:] == "C":
+                                    mp = melting_point["Value"]["StringWithMarkup"][0]["String"]
+                        if exp["TOCHeading"] == "Boiling Point": #Boiling point
+                            for boiling_point in exp["Information"]:
+                                if boiling_point["Value"]["StringWithMarkup"][0]["String"][-1:] == "C":
+                                    bp = boiling_point["Value"]["StringWithMarkup"][0]["String"]
         
-    return name, mass, ghs, haz, prec
+    return name, mass, mp, bp, ghs, haz, prec
 
-lookup_name = "palladium chloride"
+lookup_name = "decanol"
 print(pubChemLookup(lookup_name))
