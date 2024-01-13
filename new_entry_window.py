@@ -55,10 +55,17 @@ def addEntryEvent():
     window.destroy()
 
 def pubchemFetchEvent():
-    global window, name_entry, cas_entry, formula_entry, mass_entry, mp_entry, bp_entry, density_entry, haz_entry, prec_entry, ghs_entry
+    global name_entry, cas_entry, formula_entry, mass_entry, mp_entry, bp_entry, density_entry, haz_entry, prec_entry, ghs_entry
+    existing_data = [name_entry, cas_entry, formula_entry, mass_entry, mp_entry, bp_entry, density_entry, haz_entry, prec_entry, ghs_entry]
     name, mass, mp, bp, density, ghs, haz, prec = pubChemLookup(dialog.askstring("PubChem lookup", "Please provide a substance name or CAS-number."))
-    print(name, mass, mp, bp, density, ghs, haz, prec)
-
+    fetched_data = [name, "", "", mass, mp, bp, density, haz, prec, ghs]
+    for index, field in enumerate(existing_data):
+        if index == 7 or index == 8: #handle haz and prec separately sincce they are text fields and not entry fields
+            field.delete("1.0", tk.END)
+            field.insert("1.0", fetched_data[index])
+        else:
+            field.delete(0, tk.END)
+            field.insert(0, fetched_data[index])
 
 
 def newEntry():

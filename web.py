@@ -1,5 +1,6 @@
 import requests
 import time
+import tkinter.messagebox as popup
 
 haz_min_percentage = 50 #The minimum percentage of vendors who list a specific hazard statement for the searched chemical.
 
@@ -15,23 +16,19 @@ def pubChemLookup(lookup_name):
     bp = ""
     density = ""
 
-    attempt = 1
     print(f"Start: {time.thread_time() - t}")
-    while True:
-        try:
-            pug_rest_url = f"https://pubchem.ncbi.nlm.nih.gov/rest/pug/substance/name/{lookup_name}/cids/json" #PUG REST API URL
-            response = requests.get(pug_rest_url)
-            cid = response.json()['InformationList']['Information'][0]['CID'][0]
-            print(f"CID: {cid}")
-            pug_view_url = f"https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/data/compound/{cid}/JSON" #PUG_VIEW API URL
-            response = requests.get(pug_view_url)
-            name = response.json()["Record"]["RecordTitle"] #Name of the compound according to PubChem
-            sections = response.json()["Record"]["Section"]
-            break
-        except:
-            print(f"Could not connect to Pubchem (Attempt {attempt}). Rate limit may be reached or internet may be unstable. Retrying in {attempt*3} seconds...")
-            time.sleep(attempt*3)
-            attempt += 1
+    try:
+        pug_rest_url = f"https://pubchem.ncbi.nlm.nih.gov/rest/pug/substance/name/{lookup_name}/cids/json" #PUG REST API URL
+        response = requests.get(pug_rest_url)
+        cid = response.json()['InformationList']['Information'][0]['CID'][0]
+        print(f"CID: {cid}")
+        pug_view_url = f"https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/data/compound/{cid}/JSON" #PUG_VIEW API URL
+        response = requests.get(pug_view_url)
+        name = response.json()["Record"]["RecordTitle"] #Name of the compound according to PubChem
+        sections = response.json()["Record"]["Section"]
+    except:
+        popup.showerror("Error", "Could not fetch data from PubChem. Please try again.")
+        return name, mass, mp, bp, density, ghs, haz, prec
     print(f"Data fetched: {time.thread_time() - t}")
 
 
