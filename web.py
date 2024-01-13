@@ -2,7 +2,7 @@ import requests
 import time
 import tkinter.messagebox as popup
 
-haz_min_percentage = 50 #The minimum percentage of vendors who list a specific hazard statement for the searched chemical.
+haz_min_percentage = 70 #The minimum percentage of vendors who list a specific hazard statement for the searched chemical.
 
 def pubChemLookup(lookup_name):
     print(f"Looking up {lookup_name} on PubChem...")
@@ -46,14 +46,17 @@ def pubChemLookup(lookup_name):
                         #print(hazard["String"])
                         if hazard["String"][6:8].isdigit(): # will return false if no hazard statements are present
                             if hazard["String"][6:9] == "100" or int(hazard["String"][6:8]) >= haz_min_percentage:
-                                haz.append(hazard["String"][0:4])
+                                if hazard["String"][0:4] not in haz:
+                                    haz.append(hazard["String"][0:4])
                         elif hazard["String"][1:3].isdigit() == True: # fallback if no percentage is given
-                            haz.append(hazard["String"][0:4])
+                            if hazard["String"][0:4] not in haz:
+                                haz.append(hazard["String"][0:4])
                 elif hazards["Name"] == "Precautionary Statement Codes": #Precautionary statements
                     for precaution in hazards["Value"]['StringWithMarkup'][0]["String"].split(", "):
                         if precaution[:4] == "and ":
                             precaution = precaution[4:]
-                        prec.append(precaution)
+                        if precaution not in prec:
+                            prec.append(precaution)
         elif item["TOCHeading"] == "Chemical and Physical Properties": #Properties section
             properties_section = item["Section"]
             for property in properties_section:
