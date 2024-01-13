@@ -40,7 +40,7 @@ def pubChemLookup(lookup_name):
                 if hazards["Name"] == "Pictogram(s)": #GHS symbols
                     for symbol in hazards["Value"]['StringWithMarkup'][0]['Markup']:
                         if symbol["Type"] == 'Icon' and symbol['Extra'] not in ghs:
-                            ghs.append(symbol['Extra'].strip("}{"))
+                            ghs.append(symbol['Extra'])
                 elif hazards["Name"] == "GHS Hazard Statements": #Hazard statements
                     for hazard in hazards["Value"]['StringWithMarkup']:
                         #print(hazard["String"])
@@ -94,7 +94,9 @@ def pubChemLookup(lookup_name):
                                 density = density + " g/ml"
 
     print(f"Done: {time.thread_time() - t}")
+    print(name, mass, mp, bp, density, ghs, haz, prec)
     return name, mass, mp, bp, density, ghs, haz, prec
+
 
 if __name__ == "__main__":
     lookup_name = input("debug, enter name to search on pubchem: ")
