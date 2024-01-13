@@ -94,46 +94,21 @@ def printLabel():
 def dbTableItemSelected(event):
     #TODO
     #test code, deletes the selected item
-    try:
-        #get chem ID
-        id = db_table.item(db_table.selection())["values"][0]
-        chem = readEntry(id)
-        id_entry.delete(0, tk.END)
-        id_entry.insert(0, chem[0])
-        name_entry.delete(0, tk.END)
-        name_entry.insert(0, chem[1])
-        cas_entry.delete(0, tk.END)
-        cas_entry.insert(0, chem[2])
-        formula_entry.delete(0, tk.END)
-        formula_entry.insert(0, chem[3])
-        qty_entry.delete(0, tk.END)
-        qty_entry.insert(0, chem[4])
-        purity_entry.delete(0, tk.END)
-        purity_entry.insert(0, chem[5])
-        supplier_entry.delete(0, tk.END)
-        supplier_entry.insert(0, chem[6])
-        date_entry.delete(0, tk.END)
-        date_entry.insert(0, chem[7])
-        mass_entry.delete(0, tk.END)
-        mass_entry.insert(0, chem[8])
-        mp_entry.delete(0, tk.END)
-        mp_entry.insert(0, chem[9])
-        bp_entry.delete(0, tk.END)
-        bp_entry.insert(0, chem[10])
-        density_entry.delete(0, tk.END)
-        density_entry.insert(0, chem[11])
-        location_entry.delete(0, tk.END)
-        location_entry.insert(0, chem[12])
-        haz_entry.delete("1.0", tk.END)
-        haz_entry.insert("1.0", chem[13])
-        prec_entry.delete("1.0", tk.END)
-        prec_entry.insert("1.0", chem[14])
-        ghs_entry.delete(0, tk.END)
-        ghs_entry.insert(0, chem[15])
-        misc_entry.delete(0, tk.END)
-        misc_entry.insert(0, chem[16])
-    except:
-        None
+    data = [id_entry, name_entry, cas_entry, formula_entry, qty_entry, purity_entry, supplier_entry, date_entry, mass_entry, mp_entry, bp_entry, density_entry, location_entry, haz_entry, prec_entry, ghs_entry, misc_entry]
+    #get chem ID
+    id = db_table.item(db_table.selection())["values"][0]
+    chem = readEntry(id)
+    for index, field in enumerate(data):
+        if index != 13 and index != 14: #haz and prec require different processes due to beign text fields
+            field.delete(0, tk.END)
+            if chem[index] != None and chem[index] != "":
+                field.insert(0, chem[index])
+        else: #handle haz and prec
+            field.delete("1.0", tk.END)
+            if chem[index] != None and chem[index] != "":
+                field.insert("1.0", chem[index])
+
+
     
 def editEntryEvent():
     global db_table

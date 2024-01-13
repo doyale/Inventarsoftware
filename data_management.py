@@ -26,6 +26,7 @@ def editEntry(id, **kwargs):
                 if i.tag == key:
                     break
             i.text = value
+            print(i.text)
     tree.write(db)
 
 def deleteEntry(id):
@@ -69,9 +70,9 @@ def readEntry(chem_id:str):
             break #WARNING: WILL ONLY RETURN THE FIRST RESULT; IDS MUST BE UNIQUE!
     return data_total
 
-def addEntry(id, name, cas = None, formula = None, qty = None, purity = None,
-             supplier = None, date = None, mass = None, mp = None, bp = None, density = None,
-             location = None, haz = None, prec = None, ghs = None, misc = None):
+def addEntry(id, name, cas = "-", formula = "-", qty = "-", purity = "-",
+             supplier = "-", date = "-", mass = "-", mp = "-", bp = "-", density = "-",
+             location = "-", haz = "-", prec = "-", ghs = "-", misc = "-"):
     # creation of all elements
     try:
         tree = ET.parse(db)
@@ -130,6 +131,7 @@ def addEntry(id, name, cas = None, formula = None, qty = None, purity = None,
             chem_prec.text = prec
             chem_ghs.text = ghs
             chem_misc.text = misc
+            print(chem_cas.text)
 
             #write to XML file
             ET.ElementTree(root).write(db)

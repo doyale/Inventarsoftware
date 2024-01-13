@@ -9,10 +9,11 @@ def pubChemLookup(lookup_name):
     ghs = []
     haz = []
     prec = []
-    name = None
-    mass = None
-    mp = None
-    bp = None
+    name = ""
+    mass = ""
+    mp = ""
+    bp = ""
+    density = ""
 
     attempt = 1
     print(f"Start: {time.thread_time() - t}")
@@ -60,7 +61,7 @@ def pubChemLookup(lookup_name):
             properties_section = item["Section"]
             for property in properties_section:
                 if property["TOCHeading"] == "Computed Properties":
-                    mass = property['Section'][0]['Information'][0]["Value"]["StringWithMarkup"][0]["String"] #molar mass
+                    mass = property['Section'][0]['Information'][0]["Value"]["StringWithMarkup"][0]["String"] + " g/mol" #molar mass
                 elif property["TOCHeading"] == "Experimental Properties":
                     for exp in property['Section']:
                         try:
@@ -79,9 +80,24 @@ def pubChemLookup(lookup_name):
                                             bp = boiling_point["Value"]["StringWithMarkup"][0]["String"]
                         except:
                             print("Boiling point could not be fetched.")
-    
+
+                        if exp["TOCHeading"] == "Density": #Density
+                            for dens in exp["Information"]:
+                                if "StringWithMarkup" in dens["Value"]:
+                                    dens_string = dens["Value"]["StringWithMarkup"][0]["String"]
+                                    # Reads the density string until no more digits appear, then uses the most precise value.
+                                    dens_temporary = dens_string[:2] #Initial two characters are always present so no need to check for digits here.
+                                    char_digit = 2
+                                    while len(dens_string) >= char_digit + 1 and dens_string[char_digit].isdigit() == True:
+                                        dens_temporary = dens_temporary + dens_string[char_digit]
+                                        char_digit += 1
+                                    if len(density) < len(dens_temporary):
+                                        density = dens_temporary
+                            if density != "":
+                                density = density + " g/ml"
+
     print(f"Done: {time.thread_time() - t}")
-    return name, mass, mp, bp, ghs, haz, prec
+    return name, mass, mp, bp, density, ghs, haz, prec
 
 if __name__ == "__main__":
     lookup_name = input("debug, enter name to search on pubchem: ")

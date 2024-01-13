@@ -1,5 +1,7 @@
 import tkinter as tk
 from data_management import addEntry
+from web import pubChemLookup
+import tkinter.simpledialog as dialog
 
 id_title_name = "ID: "
 name_title_name = "Name: "
@@ -19,6 +21,7 @@ prec_title_name = "Precautionary statements: "
 ghs_title_name = "GHS Symbols: "
 misc_title_name = "Additional info: "
 edit_btn_text = "Save new entry"
+pubchem_btn_text = "Fetch data from PubChem"
 
 info_entry_font = ("Seoge UI", 11)
 entry_width = 53
@@ -51,6 +54,13 @@ def addEntryEvent():
     global window
     window.destroy()
 
+def pubchemFetchEvent():
+    global window, name_entry, cas_entry, formula_entry, mass_entry, mp_entry, bp_entry, density_entry, haz_entry, prec_entry, ghs_entry
+    name, mass, mp, bp, density, ghs, haz, prec = pubChemLookup(dialog.askstring("PubChem lookup", "Please provide a substance name or CAS-number."))
+    print(name, mass, mp, bp, density, ghs, haz, prec)
+
+
+
 def newEntry():
     global id_entry, name_entry, cas_entry, formula_entry, qty_entry, purity_entry, supplier_entry, date_entry, mass_entry, mp_entry, bp_entry, density_entry, location_entry, haz_entry, prec_entry, ghs_entry, misc_entry
     #initialize the right display section
@@ -61,6 +71,9 @@ def newEntry():
 
     #initialize the info section and frame
     info_frame = tk.Frame(master=window)
+
+    pubchem_fetch_button = tk.Button(master=window, background=banner_bg, foreground=banner_fg, text=pubchem_btn_text, width=83, pady=10,
+                                  command=pubchemFetchEvent)
 
     #Header section
     title_frame = tk.Frame(border=5, master=info_frame, background=info_bg)
@@ -88,7 +101,6 @@ def newEntry():
     entry_frame = tk.Frame(border=5, background=info_bg, master=info_frame)
     id_entry = tk.Entry(master=entry_frame, background=info_bg, font=info_entry_font, width=entry_width)
     name_entry = tk.Entry(master=entry_frame, background=info_bg, font=info_entry_font, width=entry_width)
-    text_entry = tk.Entry(master=entry_frame, background=info_bg, font=info_entry_font, width=entry_width)
     cas_entry = tk.Entry(master=entry_frame, background=info_bg, font=info_entry_font, width=entry_width)
     formula_entry = tk.Entry(master=entry_frame, background=info_bg, font=info_entry_font, width=entry_width)
     qty_entry = tk.Entry(master=entry_frame, background=info_bg, font=info_entry_font, width=entry_width)
@@ -110,7 +122,8 @@ def newEntry():
     save_entry_button = tk.Button(master=window, background=banner_bg, foreground=banner_fg, text=edit_btn_text, width=83, pady=10,
                                   command=addEntryEvent)
 
-    #pack right frame
+    #pack save entry button
+    pubchem_fetch_button.pack(side=tk.TOP)
     save_entry_button.pack(side=tk.BOTTOM)
     save_entry_spacer.pack(side=tk.BOTTOM)
 
