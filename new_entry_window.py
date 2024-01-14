@@ -57,8 +57,8 @@ def addEntryEvent():
 def pubchemFetchEvent():
     global name_entry, cas_entry, formula_entry, mass_entry, mp_entry, bp_entry, density_entry, haz_entry, prec_entry, ghs_entry
     existing_data = [name_entry, cas_entry, formula_entry, mass_entry, mp_entry, bp_entry, density_entry, haz_entry, prec_entry, ghs_entry]
-    name, mass, mp, bp, density, ghs, haz, prec = pubChemLookup(dialog.askstring("PubChem lookup", "Please provide a substance name or CAS-number."))
-    fetched_data = [name, "", "", mass, mp, bp, density, haz, prec, ghs]
+    name, cas, formula, mass, mp, bp, density, ghs, haz, prec = pubChemLookup(dialog.askstring("PubChem lookup", "Please provide a substance name or CAS-number."))
+    fetched_data = [name, cas, formula, mass, mp, bp, density, haz, prec, ghs]
     for index, field in enumerate(existing_data):
         if index == 7 or index == 8: #handle haz and prec separately sincce they are text fields and not entry fields
             field.delete("1.0", tk.END)

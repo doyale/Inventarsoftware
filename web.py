@@ -11,6 +11,8 @@ def pubChemLookup(lookup_name):
     haz = []
     prec = []
     name = ""
+    formula = ""
+    cas = ""
     mass = ""
     mp = ""
     bp = ""
@@ -39,8 +41,37 @@ def pubChemLookup(lookup_name):
                 #print(hazards["Name"])
                 if hazards["Name"] == "Pictogram(s)": #GHS symbols
                     for symbol in hazards["Value"]['StringWithMarkup'][0]['Markup']:
-                        if symbol["Type"] == 'Icon' and symbol['Extra'] not in ghs:
-                            ghs.append(symbol['Extra'])
+                        if symbol["Type"] == 'Icon':
+                            match symbol['Extra']:
+                                case "Explosive":
+                                    if "GHS01" not in ghs:
+                                        ghs.append("GHS01")
+                                case "Flammable":
+                                    if "GHS02" not in ghs:
+                                        ghs.append("GHS02")
+                                case "Oxidizer":
+                                    if "GHS03" not in ghs:
+                                        ghs.append("GHS03")
+                                case "Compressed Gas":
+                                    if "GHS04" not in ghs:
+                                        ghs.append("GHS04")
+                                case "Corrosive":
+                                    if "GHS05" not in ghs:
+                                        ghs.append("GHS05")
+                                case "Acute Toxic":
+                                    if "GHS06" not in ghs:
+                                        ghs.append("GHS06")
+                                case "Irritant":
+                                    if "GHS07" not in ghs:
+                                        ghs.append("GHS07")
+                                case "Health Hazard":
+                                    if "GHS08" not in ghs:
+                                        ghs.append("GHS08")
+                                case "Environmental Hazard":
+                                    if "GHS09" not in ghs:
+                                        ghs.append("GHS09")
+                                case other:
+                                    None
                 elif hazards["Name"] == "GHS Hazard Statements": #Hazard statements
                     for hazard in hazards["Value"]['StringWithMarkup']:
                         #print(hazard["String"])
@@ -95,13 +126,22 @@ def pubChemLookup(lookup_name):
                                         density = dens_temporary
                             if density != "":
                                 density = density + " g/ml"
+        elif item["TOCHeading"] == "Names and Identifiers":
+            for identifier in item["Section"]:
+                if identifier["TOCHeading"] == "Molecular Formula": #molecular formula section
+                    formula = identifier["Information"][0]["Value"]["StringWithMarkup"][0]["String"]
+
+                elif identifier["TOCHeading"] == "Other Identifiers":
+                    for sub_identifier in identifier["Section"]:
+                        if sub_identifier["TOCHeading"] == "CAS": #CAS section
+                            cas = sub_identifier["Information"][0]["Value"]["StringWithMarkup"][0]["String"]
+
+                
 
     print(f"Done: {time.thread_time() - t}")
-    print(name, mass, mp, bp, density, ghs, haz, prec)
-    return name, mass, mp, bp, density, ghs, haz, prec
+    return name, cas, formula, mass, mp, bp, density, ghs, haz, prec
 
 
 if __name__ == "__main__":
     lookup_name = input("debug, enter name to search on pubchem: ")
     print(pubChemLookup(lookup_name))
-    
