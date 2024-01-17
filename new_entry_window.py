@@ -34,25 +34,28 @@ banner_fg = "black"
 
 def addEntryEvent():
     global id_entry, name_entry, cas_entry, formula_entry, qty_entry, purity_entry, supplier_entry, date_entry, mass_entry, mp_entry, bp_entry, density_entry, location_entry, haz_entry, prec_entry, ghs_entry, misc_entry
-    addEntry(id=id_entry.get(),
-              name=name_entry.get(),
-              cas=cas_entry.get(),
-              formula=formula_entry.get(),
-              qty=qty_entry.get(),
-              purity=purity_entry.get(),
-              supplier=supplier_entry.get(),
-              date=date_entry.get(),
-              mass=mass_entry.get(),
-              mp=mp_entry.get(),
-              bp=bp_entry.get(),
-              density=density_entry.get(),
-              location=location_entry.get(),
-              haz=haz_entry.get("1.0",'end-1c'),
-              prec=prec_entry.get("1.0",'end-1c'),
-              ghs=ghs_entry.get(),
-              misc=misc_entry.get())
-    global window
-    window.destroy()
+    try:
+        addEntry(id=id_entry.get(),
+                name=name_entry.get(),
+                cas=cas_entry.get(),
+                formula=formula_entry.get(),
+                qty=qty_entry.get(),
+                purity=purity_entry.get(),
+                supplier=supplier_entry.get(),
+                date=date_entry.get(),
+                mass=mass_entry.get(),
+                mp=mp_entry.get(),
+                bp=bp_entry.get(),
+                density=density_entry.get(),
+                location=location_entry.get(),
+                haz=haz_entry.get("1.0",'end-1c'),
+                prec=prec_entry.get("1.0",'end-1c'),
+                ghs=ghs_entry.get(),
+                misc=misc_entry.get())
+        global window
+        window.destroy()
+    except:
+        print("Could not add entry. Does the ID already exist?")
 
 def pubchemFetchEvent():
     global name_entry, cas_entry, formula_entry, mass_entry, mp_entry, bp_entry, density_entry, haz_entry, prec_entry, ghs_entry

@@ -1,4 +1,9 @@
-import requests
+import subprocess
+import sys
+try:
+    import requests
+except:
+    subprocess.check_call([sys.executable, "-m", "pip", "install", "requests"])
 import time
 import tkinter.messagebox as popup
 

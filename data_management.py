@@ -18,7 +18,7 @@ def editEntry(id, **kwargs):
     root = tree.getroot()
     chem_id = None
     for chem_id in root.iter("chem_id"):
-        if chem_id.text == id:
+        if chem_id.text == str(id):
             break
     if chem_id != None:
         for key, value in kwargs.items():
@@ -26,7 +26,6 @@ def editEntry(id, **kwargs):
                 if i.tag == key:
                     break
             i.text = value
-            print(i.text)
     tree.write(db)
 
 def deleteEntry(id):
@@ -136,6 +135,8 @@ def addEntry(id, name, cas = "-", formula = "-", qty = "-", purity = "-",
             #write to XML file
             ET.ElementTree(root).write(db)
             print(f"saved entry {id} to the database.")
+    else:
+        raise Exception("The provided ID already exists.")
 
 #test code
 # teststring = dialog.askstring(title="test", prompt="test chem name:")
