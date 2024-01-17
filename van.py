@@ -11,7 +11,7 @@ OPTIONS = {
   "exclude_modules": [],
   "include_modules": [],
   "path_to_get_pip_and_python_embedded_zip": "",
-  "build_dir": "InvSoft pre-alpha build 0.2",
+  "build_dir": "InvSoft pre-alpha build 0.3",
   "pydist_sub_dir": "pydist",
   "source_sub_dir": "",
   "icon_file": None,
