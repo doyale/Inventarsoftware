@@ -17,6 +17,7 @@ from data_management import readEntries, editEntry, readEntry, deleteEntry
 from query import dbQuery
 import tkinter.simpledialog as dialog
 from new_entry_window import newEntry
+import re
 
 #style variables
 banner_height = 2
@@ -91,15 +92,55 @@ def printLabel():
     #TODO
     popup.showwarning(title=None, message="Under development")
 
-def dbTableItemSelected(event):
+def sortTable(event): #currently only returns the double clicked column
     #TODO
-    #test code, deletes the selected item
+    global db_table
+    if db_table.identify("region", event.x, event.y) == "heading":
+        column = db_table_headers[int(db_table.identify('column', event.x, event.y)[1])-1]
+        table_array = [(db_table.set(k, column), k) for k in db_table.get_children()]
+        match column: #treat special cases differently than normal strings
+            case "db_cas":
+                cas_list = []
+                cas_list_joined = []
+                for item, index in table_array:
+                    cas_list.append([tuple(map(int, re.findall(r'\d+', item))), index])
+                cas_list.sort()
+                for item, index in cas_list:
+                    cas = f"{item[0]}-{item[1]}-{item[2]}"
+                    cas_list_joined.append((cas, index))
+                table_array = cas_list_joined
+            case "db_id":
+                separator = ""
+                id_list = []
+                id_list_joined = []
+                for item, index in table_array:
+                    id_number = tuple(map(int, re.findall(r'\d+', item)))[0]
+                    i = 0
+                    initial_string = ""
+                    while item[i].isdigit() == False: #collect the leading characters of the ID string
+                        initial_string = initial_string + item[i]
+                        i += 1
+                    id_list.append([(initial_string, id_number), index])
+                id_list.sort()
+                for item, index in id_list:
+                    id_list_joined.append((item[0] + str(item[1]), index))
+                table_array = id_list_joined
+                    
+            case _: #all regular strings are handled here
+                table_array.sort()
+        for index, (_, item) in enumerate(table_array):
+            db_table.move(item, parent="", index=index)
+
+            
+
+
+def dbTableItemSelected(event):
     data = [id_entry, name_entry, cas_entry, formula_entry, qty_entry, purity_entry, supplier_entry, date_entry, mass_entry, mp_entry, bp_entry, density_entry, location_entry, haz_entry, prec_entry, ghs_entry, misc_entry]
     #get chem ID
     id = db_table.item(db_table.selection())["values"][0]
     chem = readEntry(id)
     for index, field in enumerate(data):
-        if index != 13 and index != 14: #haz and prec require different processes due to beign text fields
+        if index != 13 and index != 14: #haz and prec require different processes due to being text fields
             field.delete(0, tk.END)
             if chem[index] != None and chem[index] != "":
                 field.insert(0, chem[index])
@@ -154,6 +195,7 @@ def deleteEntryEvent():
 db_window = tk.Tk()
 db_window.title(db_window_title)
 db_window.resizable(width=False, height=False)
+db_window.iconbitmap("icon.ico")
 
 #initialize database window menu banner
 banner_frame = tk.Frame(border=5)
@@ -179,8 +221,10 @@ def initTable(state:str = None, arg = None):
     db_table_frame = tk.Frame()
     db_table = ttk.Treeview(master=db_table_frame, columns=db_table_headers, show="headings", height=db_table_height)
     for i in enumerate(db_table_headers):
-        db_table.heading(db_table_headers[i[0]], text=db_table_header_titles[i[0]])
+        db_table.heading(db_table_headers[i[0]], text=db_table_header_titles[i[0]], command=lambda: \
+                         sortTable)
         db_table.column(db_table_headers[i[0]], width=db_table_column_width[i[0]], stretch=False)
+        print(f"{db_table_headers[i[0]]}, Type: {type(db_table_headers[i[0]])}")
     
     if state == "query": #load query results
         chems = dbQuery(arg)
@@ -192,6 +236,7 @@ def initTable(state:str = None, arg = None):
         db_table.insert('', tk.END, values=chem_display)
 
     db_table.bind('<<TreeviewSelect>>', dbTableItemSelected)
+    db_table.bind("<Double-1>", sortTable)
     db_table.pack()
     db_table_frame.pack(anchor="nw", side=tk.LEFT)
     return db_table, db_table_frame

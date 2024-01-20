@@ -1,0 +1,3 @@
+@echo off
+rem Installing dependencies, please wait...
+pip install requests
