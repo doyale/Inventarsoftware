@@ -110,7 +110,6 @@ def sortTable(event): #currently only returns the double clicked column
                     cas_list_joined.append((cas, index))
                 table_array = cas_list_joined
             case "db_id":
-                separator = ""
                 id_list = []
                 id_list_joined = []
                 for item, index in table_array:

@@ -7,7 +7,7 @@ except:
 import time
 import tkinter.messagebox as popup
 
-haz_min_percentage = 70 #The minimum percentage of vendors who list a specific hazard statement for the searched chemical.
+haz_min_percentage = 50 #The minimum percentage of vendors who list a specific hazard statement for the searched chemical.
 
 def pubChemLookup(lookup_name):
     print(f"Looking up {lookup_name} on PubChem...")
@@ -144,6 +144,10 @@ def pubChemLookup(lookup_name):
                 
 
     print(f"Done: {time.thread_time() - t}")
+    #processing code here:
+    # haz = hazmatCondenser(haz)
+    # prec = precautionaryCondenser(haz, prec)
+
     return name, cas, formula, mass, mp, bp, density, ghs, haz, prec
 
 
