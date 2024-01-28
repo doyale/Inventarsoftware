@@ -18,6 +18,8 @@ from query import dbQuery
 import tkinter.simpledialog as dialog
 from new_entry_window import newEntry
 import re
+from label_display import chemLabel
+from PIL import ImageTk
 
 #style variables
 banner_height = 2
@@ -30,10 +32,13 @@ db_table_column_width = (50, 250, 120, 70, 100, 80, 120)
 info_bg = "white"
 db_table_height = 45
 info_entry_font = ("Seoge UI", 11)
-entry_width = 53
-entry_height = 6
-info_spacer_height = 85
+entry_width = 66
+entry_height = 3
+info_spacer_height = 34
 spacer_dimensions = 18
+edit_entry_button_width = 98
+label_width = 696
+label_height = 423
 
 #language specific variables
 new_entry_btn_text = "New Entry"
@@ -240,12 +245,16 @@ def initTable(state:str = None, arg = None):
     db_table_frame.pack(anchor="nw", side=tk.LEFT)
     return db_table, db_table_frame
 
+
 #initialize the right display section
 right_frame = tk.Frame()
 
 #initialize the label image section
 #TODO: Add label design logic
-label_frame = tk.Frame(master=right_frame, width=590, height=315, bg="red")
+global label_label
+label_image = ImageTk.PhotoImage(chemLabel("Test"))
+label_frame = tk.Frame(master=right_frame, width=label_width, height=label_height, bg="red")
+label_label = tk.Label(label_frame, image=label_image)
 label_spacer = tk.Frame(master=right_frame, height=spacer_dimensions)
 info_spacer_left = tk.Frame(master=right_frame, width=spacer_dimensions)
 
@@ -297,7 +306,7 @@ misc_entry = tk.Entry(master=entry_frame, background=info_bg, font=info_entry_fo
 
 #initialize the edit entry button
 edit_entry_spacer = tk.Frame(master=right_frame, height=5)
-edit_entry_button = tk.Button(master=right_frame, background=banner_bg, foreground=banner_fg, text=edit_btn_text, width=83, pady=10, command=editEntryEvent)
+edit_entry_button = tk.Button(master=right_frame, background=banner_bg, foreground=banner_fg, text=edit_btn_text, width=edit_entry_button_width, pady=10, command=editEntryEvent)
 
 #pack database window menu banner
 left_spacer.pack(side=tk.LEFT)
@@ -327,6 +336,7 @@ info_spacer_left.pack(side=tk.LEFT)
 
 #pack label image section
 label_frame.pack(side=tk.TOP, anchor="nw")
+label_label.pack()
 label_spacer.pack()
 edit_entry_button.pack(side=tk.BOTTOM)
 edit_entry_spacer.pack(side=tk.BOTTOM)
