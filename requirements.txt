@@ -1,0 +1,7 @@
+tkinter
+sys
+os
+re
+PIL
+xml.etree.ElementTree
+web

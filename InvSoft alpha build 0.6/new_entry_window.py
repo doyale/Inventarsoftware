@@ -79,11 +79,8 @@ def assignNewIDEvent():
     id_letter = dialog.askstring("New ID", "Please provide the storage location letter for the new ID:").upper()
     if len(id_letter) == 1 and id_letter.isdigit() == False:
         ids = idQuery(id_letter)
-        if len(ids) != 0:
-            ids = [int(x.replace(id_letter, "")) for x in ids] # removes the location indicator letter.
-            new_id = max(ids) + 1
-        else:
-            new_id = 1
+        ids = [int(x.replace(id_letter, "")) for x in ids] # removes the location indicator letter.
+        new_id = max(ids) + 1
         id_entry.delete(0, tk.END)
         id_entry.insert(0, f"{id_letter}{new_id}")
         
