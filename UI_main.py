@@ -11,6 +11,7 @@ https://www.pythontutorial.net/tkinter/tkinter-treeview/
 
 
 import tkinter as tk
+from tkinter import filedialog
 import tkinter.messagebox as popup
 from tkinter import ttk
 from data_management import readEntries, editEntry, readEntry, deleteEntry
@@ -19,6 +20,12 @@ import tkinter.simpledialog as dialog
 from new_entry_window import newEntry
 import re
 from label_display import chemLabel
+import pandas as pd
+from reportlab.lib.pagesizes import A4
+from reportlab.platypus import SimpleDocTemplate, Table, TableStyle
+from reportlab.lib import colors
+from datetime import datetime
+
 
 #style variables
 banner_height = 2
@@ -68,6 +75,27 @@ misc_title_name = "Additional info: "
 edit_btn_text = "Edit selected entry"
 export_btn_text = "Export"
 
+# pdf export style
+
+table_style = TableStyle([
+    ('BACKGROUND', (0, 0), (-1, 0), colors.black),
+    ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+    ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+    ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+    ('FONTSIZE', (0, 0), (-1, 0), 8),
+    ('BOTTOMPADDING', (0, 0), (-1, 0), 4),
+    ('ROWBACKGROUNDS', (0, 1), (-1, -1), [colors.lightgrey, colors.white]),
+    ('LEFTPADDING', (0, 1), (-1, -1), 2),
+    ('RIGHTPADDING', (0, 1), (-1, -1), 2),
+    ('TEXTCOLOR', (0, 1), (-1, -1), colors.black),
+    ('ALIGN', (0, 1), (1, -1), 'LEFT'),
+    ('ALIGN', (2, 1), (-1, -1), 'CENTER'),
+    ('FONTNAME', (0, 1), (-1, -1), 'Helvetica'),
+    ('FONTSIZE', (0, 1), (-1, -1), 8),
+    ('TOPPADDING', (0, 1), (-1, -1), 2),
+    ('BOTTOMPADDING', (0, 1), (-1, -1), 2),
+])
+
 
 
 #other variables
@@ -97,9 +125,48 @@ def printLabel():
     #TODO
     popup.showwarning(title=None, message="Under development")
 
+def getTreeviewDict():
+    """parses the treeview table to a dictionary
+
+    Returns:
+        dict: data from the displayed table
+    """
+    global db_table
+    id_list = [] #empty list for each column to be exported
+    name_list = []
+    cas_list = []
+    qty_list = []
+    supplier_list = []
+    rcv_list = []
+    location_list = []
+    for child in db_table.get_children():
+        id_list.append(db_table.item(child)["values"][0])
+        name_list.append(db_table.item(child)["values"][1])
+        cas_list.append(db_table.item(child)["values"][2])
+        qty_list.append(db_table.item(child)["values"][3])
+        supplier_list.append(db_table.item(child)["values"][4])
+        rcv_list.append(db_table.item(child)["values"][5])
+        location_list.append(db_table.item(child)["values"][6])
+    treeview_dict = {"ID": id_list, "Name": name_list, "CAS": cas_list, "Quantity": qty_list,
+                     "Supplier": supplier_list, "Date Received": rcv_list, "Storage Location": location_list}
+    return treeview_dict
+
 def exportTable():
-    #TODO
-    popup.showwarning(title=None, message="Under development")
+    path_name = os.path.join(filedialog.askdirectory(), f"Inventory_{datetime.now().strftime('%d.%m.%Y_%H-%M-%S')}.pdf")
+    tk.Label(top, text="Please wait while the inventory is exported...")
+    treeview_df = pd.DataFrame.from_dict(getTreeviewDict()) # converts the treeview table from a dictionary to a pandas dataframe
+    pdf = SimpleDocTemplate(path_name, pagesize=A4)
+    table_data = [["ID", "Name", "CAS", "Quantity", "Supplier", "Received", "Location"]] #creates a list of all rows in order as displayed
+    for _, row in treeview_df.iterrows():
+        if len(row[1]) >= 40: # makes sure the name string isn't too long to be displayed
+            row[1] = row[1][0:40] + "..."
+        table_data.append(list(row))
+        table = Table(table_data)
+        table.setStyle(table_style)
+        pdf_table = [table]
+        pdf.build(pdf_table)
+
+
 
 def sortTable(event): #currently only returns the double clicked column
     #TODO
