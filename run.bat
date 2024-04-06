@@ -1,6 +1,6 @@
 @echo off
-if exist setup.exe (
-    call setup.exe
-    del setup.bat
-)
-python UI_main.py
+set "pvar=%cd%"
+echo %pvar%
+cd dist
+python.exe "%pvar%\UI_main.py"
+pause

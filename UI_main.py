@@ -19,7 +19,6 @@ import tkinter.simpledialog as dialog
 from new_entry_window import newEntry
 import re
 from label_display import chemLabel
-from PIL import ImageTk
 
 #style variables
 banner_height = 2
@@ -67,6 +66,7 @@ prec_title_name = "Precautionary statements: "
 ghs_title_name = "GHS Symbols: "
 misc_title_name = "Additional info: "
 edit_btn_text = "Edit selected entry"
+export_btn_text = "Export"
 
 
 
@@ -94,6 +94,10 @@ def refresh():
     db_table, db_table_frame = initTable()
 
 def printLabel():
+    #TODO
+    popup.showwarning(title=None, message="Under development")
+
+def exportTable():
     #TODO
     popup.showwarning(title=None, message="Under development")
 
@@ -216,6 +220,8 @@ refresh_spacer = tk.Frame(width=banner_spacer_width, height=banner_height, maste
 print_label_button = tk.Button(text=print_label_btn_text, width=banner_width, height=banner_height, bg=banner_bg, fg=banner_fg, master=banner_frame, command=printLabel)
 print_label_spacer = tk.Frame(width=banner_spacer_width, height=banner_height, master=banner_frame)
 delete_entry_button = tk.Button(text=delete_entry_btn_text, width=banner_width, height=banner_height, bg=banner_bg, fg=banner_fg, master=banner_frame, command=deleteEntryEvent)
+delete_entry_spacer = tk.Frame(width=banner_spacer_width, height=banner_height, master=banner_frame)
+export_button = tk.Button(text=export_btn_text, width=banner_width, height=banner_height, bg=banner_bg, fg=banner_fg, master=banner_frame, command=exportTable)
 
 
 banner_frame.pack(anchor="w")
@@ -255,10 +261,10 @@ right_frame = tk.Frame()
 #initialize the label image section
 #TODO: Add label design logic
 global label_label
-label_image = ImageTk.PhotoImage(chemLabel("Test"))
-label_frame = tk.Frame(master=right_frame, width=label_width, height=label_height, bg="red")
-label_label = tk.Label(label_frame, image=label_image)
-label_spacer = tk.Frame(master=right_frame, height=spacer_dimensions)
+# label_image = ImageTk.PhotoImage(chemLabel("Test"))
+# label_frame = tk.Frame(master=right_frame, width=label_width, height=label_height, bg="red")
+# label_label = tk.Label(label_frame, image=label_image)
+# label_spacer = tk.Frame(master=right_frame, height=spacer_dimensions)
 info_spacer_left = tk.Frame(master=right_frame, width=spacer_dimensions)
 
 #initialize the info section and frame
@@ -322,6 +328,8 @@ refresh_spacer.pack(side=tk.LEFT)
 print_label_button.pack(side=tk.LEFT)
 print_label_spacer.pack(side=tk.LEFT)
 delete_entry_button.pack(side=tk.LEFT)
+delete_entry_spacer.pack(side=tk.LEFT)
+export_button.pack(side=tk.LEFT)
 
 # initialize the database table and surrounding frame
 global db_table
