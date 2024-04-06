@@ -19,7 +19,6 @@ import tkinter.simpledialog as dialog
 from new_entry_window import newEntry
 import re
 from label_display import chemLabel
-from PIL import ImageTk
 
 #style variables
 banner_height = 2
@@ -255,10 +254,10 @@ right_frame = tk.Frame()
 #initialize the label image section
 #TODO: Add label design logic
 global label_label
-label_image = ImageTk.PhotoImage(chemLabel("Test"))
-label_frame = tk.Frame(master=right_frame, width=label_width, height=label_height, bg="red")
-label_label = tk.Label(label_frame, image=label_image)
-label_spacer = tk.Frame(master=right_frame, height=spacer_dimensions)
+# label_image = ImageTk.PhotoImage(chemLabel("Test"))
+# label_frame = tk.Frame(master=right_frame, width=label_width, height=label_height, bg="red")
+# label_label = tk.Label(label_frame, image=label_image)
+# label_spacer = tk.Frame(master=right_frame, height=spacer_dimensions)
 info_spacer_left = tk.Frame(master=right_frame, width=spacer_dimensions)
 
 #initialize the info section and frame
