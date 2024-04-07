@@ -153,11 +153,12 @@ def getTreeviewDict():
 
 def exportTable():
     path_name = os.path.join(filedialog.askdirectory(), f"Inventory_{datetime.now().strftime('%d.%m.%Y_%H-%M-%S')}.pdf")
-    tk.Label(top, text="Please wait while the inventory is exported...")
     treeview_df = pd.DataFrame.from_dict(getTreeviewDict()) # converts the treeview table from a dictionary to a pandas dataframe
     pdf = SimpleDocTemplate(path_name, pagesize=A4)
     table_data = [["ID", "Name", "CAS", "Quantity", "Supplier", "Received", "Location"]] #creates a list of all rows in order as displayed
+    rowcount = 0
     for _, row in treeview_df.iterrows():
+        rowcount += 1
         if len(row[1]) >= 40: # makes sure the name string isn't too long to be displayed
             row[1] = row[1][0:40] + "..."
         table_data.append(list(row))
@@ -165,6 +166,7 @@ def exportTable():
         table.setStyle(table_style)
         pdf_table = [table]
         pdf.build(pdf_table)
+    print(f"Exported inventory ({rowcount} items).")
 
 
 
