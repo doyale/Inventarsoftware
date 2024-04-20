@@ -76,7 +76,6 @@ edit_btn_text = "Edit selected entry"
 export_btn_text = "Export"
 
 # pdf export style
-
 table_style = TableStyle([
     ('BACKGROUND', (0, 0), (-1, 0), colors.black),
     ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
@@ -302,11 +301,12 @@ def initTable(state:str = None, arg = None):
     #initialize database window table
     db_table_frame = tk.Frame()
     db_table = ttk.Treeview(master=db_table_frame, columns=db_table_headers, show="headings", height=db_table_height)
+    db_scroll = tk.Scrollbar(master=db_table_frame)
     for i in enumerate(db_table_headers):
         db_table.heading(db_table_headers[i[0]], text=db_table_header_titles[i[0]], command=lambda: \
                          sortTable)
         db_table.column(db_table_headers[i[0]], width=db_table_column_width[i[0]], stretch=False)
-        print(f"{db_table_headers[i[0]]}, Type: {type(db_table_headers[i[0]])}")
+        #print(f"{db_table_headers[i[0]]}, Type: {type(db_table_headers[i[0]])}")
     
     if state == "query": #load query results
         chems = dbQuery(arg)
@@ -319,7 +319,10 @@ def initTable(state:str = None, arg = None):
 
     db_table.bind('<<TreeviewSelect>>', dbTableItemSelected)
     db_table.bind("<Double-1>", sortTable)
-    db_table.pack()
+    db_table.pack(side=tk.LEFT)
+    db_scroll.pack(side=tk.RIGHT, fill=tk.Y)
+    db_scroll.config(command=db_table.yview)
+    db_table.config(yscrollcommand=db_scroll.set)
     db_table_frame.pack(anchor="nw", side=tk.LEFT)
     return db_table, db_table_frame
 
