@@ -28,7 +28,6 @@ submit_btn_text = "Submit Entry"
 class eln_window:
     def __init__(self, master):
         self.master = master
-
         # Initialize the left hand frame containing the button header, log, entry field and submission button
         self.left_frame = Frame(self.master, border=frame_border)
         self.right_frame = Frame(self.master, border=frame_border)
@@ -101,5 +100,6 @@ class eln_window:
 
 root = Tk()
 root.title(eln_window_title)
+root.iconbitmap("icon.ico")
 gui = eln_window(root) #no idea what this does but it's necessary
 root.mainloop()
