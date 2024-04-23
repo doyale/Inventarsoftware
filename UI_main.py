@@ -201,7 +201,9 @@ def sortTable(event): #currently only returns the double clicked column
                         i += 1
                     id_list.append([(initial_string, id_number), index])
                 id_list.sort()
+                
                 for item, index in id_list:
+                    #print(str(item)[2:3]+str(item)[6:-1]) #prints all chem IDs in order, useful fro exporting ID labels for caps
                     id_list_joined.append((item[0] + str(item[1]), index))
                 table_array = id_list_joined
                     
@@ -273,6 +275,7 @@ def deleteEntryEvent():
 #initialize the database main window
 db_window = tk.Tk()
 db_window.title(db_window_title)
+db_window.geometry("+10+10")
 db_window.resizable(width=False, height=False)
 db_window.iconbitmap("icon.ico")
 
@@ -299,7 +302,7 @@ def initTable(state:str = None, arg = None):
     state: dictates which type of data has to be displayed. If no value is passed, the entire table is shown.
     """
     #initialize database window table
-    db_table_frame = tk.Frame()
+    db_table_frame = tk.Frame(width=669)
     db_table = ttk.Treeview(master=db_table_frame, columns=db_table_headers, show="headings", height=db_table_height)
     db_scroll = tk.Scrollbar(master=db_table_frame)
     for i in enumerate(db_table_headers):

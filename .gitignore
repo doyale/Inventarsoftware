@@ -158,6 +158,9 @@ van.py
 # Test code files
 test.py
 
+# ELN files
+ELN/
+
 # Design files
 ELN_design.afdesign
 
