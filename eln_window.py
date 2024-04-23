@@ -41,12 +41,12 @@ class eln_window:
     def __init__(self, master):
         debug("Initialization start")
         self.master = master
+        master.bind("<FocusIn>", self.rootFocus)
         # Initialize the left hand frame containing the button header, log, entry field and submission button
         self.left_frame = Frame(self.master, border=0)
         self.right_frame = Frame(self.master, border=0, width=600)
         # reaction image canvas init
-        # analytics section TODO
-        self.analytics_frame = Frame(self.right_frame, height=210, width=600, border=frame_border, background="white")
+        
 
         debug("All elements configured, packing widgets")
         # Load widgets
@@ -55,8 +55,7 @@ class eln_window:
         self.loadEntrySection()
         self.loadReactionImage()
         self.loadStoich()
-        # analytics TODO
-        self.analytics_frame.pack()
+        self.loadAnalytics()
         self.left_frame.pack(side=tk.LEFT)
         self.right_frame.pack(side=tk.RIGHT)
 
@@ -91,40 +90,33 @@ class eln_window:
                 shutil.copyfile(f"{os.path.dirname(os.path.realpath(__file__))}\\template.cdxml", f"{os.getcwd()}\\reaction.cdxml")
                 root = ET.Element("root")
                 ET.ElementTree(root).write("log.xml")
-                os.startfile(f"{os.getcwd()}\\reaction.cdxml") # opens the file in chemdraw, this is just for testing purposes for now.
+                ET.ElementTree(root).write("stoich.xml")
+                ET.ElementTree(root).write("info.xml")
                 debug("Copying done")
-        debug("New entry created.")  
+        debug("New entry created")  
+
+    def openChemDraw(self, event):
+        debug("Trying to open CDXML file")
+        try:
+            os.startfile(f"{os.getcwd()}\\reaction.cdxml")
+        except:
+            debug("Failed to open CDXML file")
+            return None
+        debug("Success")
 
     def loadEntryEvent(self, entry_dir = None):
         debug("Start entry loading")
         if entry_dir == None:
             entry_dir = filedialog.askdirectory(mustexist=True, initialdir=f"{os.path.dirname(os.path.realpath(__file__))}\ELN")
-        debug("Entry directory chosen")
-        #test code for displaying a chemdraw file as image
         os.chdir(entry_dir)
+        debug("Entry directory chosen")
         self.destroyLog()
         self.destroyEntrySection()
         self.loadLog()
         self.loadEntrySection()
         debug("Changed working directory, parsed log xml")
-        m = AllChem.ReactionsFromCDXMLFile("reaction.cdxml")
-        debug("parsed cdxml file")
-        nReactants = m[0].GetNumReactantTemplates() + m[0].GetNumAgentTemplates()*1.3 + m[0].GetNumProductTemplates()
-        debug(f"image width modifier: {nReactants}")
-        img = Draw.ReactionToImage(m[0], subImgSize=(int(800/(nReactants*1)), 200))
-        ratio = img.size[0]/img.size[1]
-        debug("converted reaction to image")
-        img = img.resize((600, int(600/ratio)), resample=PIL.Image.LANCZOS)
-        if img.size[1] > 200:
-            img = img.resize((int(200*ratio), 200), resample=PIL.Image.LANCZOS)
-        debug("rescaled image")
-        self.imgtk = ImageTk.PhotoImage(img)
-        debug("converted to TKInter compatible format")
-        self.reaction_image.destroy()
-        self.reaction_image = Canvas(self.reaction_image_frame, height=200, width=600, background="white")
-        self.reaction_image.create_image((0,0), anchor=tk.NW, image=self.imgtk)
-        debug("set image display")
-        self.reaction_image.pack()
+        self.updateRightFrame()
+        debug("Entry loaded")
 
     def printEvent(self):
         debug("Printing...")
@@ -136,7 +128,7 @@ class eln_window:
             root.quit()
             root.destroy()
         except: None
-        debug("Window killed")
+        debug("Window killed, restarting...")
         run()
 
     def closeEvent(self):
@@ -147,11 +139,19 @@ class eln_window:
         except: None
 
     def submitEvent(self):
+        debug("Submitting Entry")
         entry_text = self.entry_field.get("1.0",'end-1c')
         if addEntry(entry_text) == True:
+            self.destroyLog()
+            self.destroyEntrySection()
             self.loadLog()
+            self.loadEntrySection()
+            debug("Finished submitting entry")
+        else:
+            debug("Failed to submit entry")  
 
     def destroyBanner(self):
+        debug("Destroying button banner")
         try:
             self.left_spacer.destroy()
             self.new_entry_button.destroy()
@@ -164,7 +164,10 @@ class eln_window:
             self.refresh_spacer.destroy()
             self.close_button.destroy()
             self.banner_frame.destroy()
-        except: None
+        except:
+            debug("Failed to destroy button banner")
+            return None
+        debug("Done")
 
     def loadBanner(self):
         debug("Loading button banner")
@@ -191,15 +194,19 @@ class eln_window:
         self.refresh_spacer.pack(side=tk.LEFT)
         self.close_button.pack(side=tk.LEFT)
         self.banner_frame.pack(anchor="nw")
-        debug("Done loading button banner")
+        debug("Done")
 
     def destroyLog(self):
+        debug("Destroying log")
         try:
             self.entry_field.delete("1.0", tk.END)
             self.log.destroy()
             self.log_scroll.destroy()
             self.log_frame.destroy()
-        except: None
+        except:
+            debug("Failed to destroy log")
+            return None
+        debug("Done")
 
     def loadLog(self): #code for loading the log table
         debug("Loading Log")
@@ -222,16 +229,21 @@ class eln_window:
         self.log_scroll.config(command=self.log.yview)
         self.log.config(yscrollcommand=self.log_scroll.set)
         self.log_frame.pack()
-        debug("Done loading log")
+        debug("Done")
 
     def destroyEntrySection(self):
+        debug("Destroying entry section")
         try:
             self.entry_field.destroy()
             self.entry_frame.destroy()
             self.entry_spacer.destroy()
-        except: None
+        except:
+            debug("Failed to destroy entry section")
+            return None
+        debug("Done")
 
     def loadEntrySection(self):
+        debug("Loading entry section")
         self.entry_frame = Frame(self.left_frame, border=frame_border)
         self.entry_field = Text(self.entry_frame, background=info_bg, font=info_entry_font, width=entry_width, height=2)
         self.entry_spacer = Frame(self.entry_frame, width=banner_spacer_width, height=banner_height)
@@ -240,25 +252,57 @@ class eln_window:
         self.entry_spacer.pack(side=tk.LEFT)
         self.submit_entry_button.pack(side=tk.RIGHT, fill=tk.X)
         self.entry_frame.pack(anchor="w")
+        debug("Done")
 
     def destroyReactionImage(self):
+        debug("Destroying reaction image canvas")
         try:
             self.reaction_image_frame.destroy()
             self.reaction_image.destroy()
-        except: None
-        
+        except:
+            debug("Failed to destroy reaction image canvas")
+            return None
+        debug("Done")
+
     def loadReactionImage(self):
+        debug("Loading reaction image canvas")
         self.reaction_image_frame = Frame(self.right_frame, height=200, width=600, border=frame_border)
         self.reaction_image = Canvas(self.reaction_image_frame, height=200, width=600, background="white")
+        try:
+            m = AllChem.ReactionsFromCDXMLFile("reaction.cdxml")
+            debug("Parsed cdxml file")
+            nReactants = m[0].GetNumReactantTemplates() + m[0].GetNumAgentTemplates()*1.3 + m[0].GetNumProductTemplates()
+            debug(f"Image width modifier: {nReactants}")
+            img = Draw.ReactionToImage(m[0], subImgSize=(int(800/(nReactants*1)), 200))
+            ratio = img.size[0]/img.size[1]
+            debug("Converted reaction to image")
+            img = img.resize((600, int(600/ratio)), resample=PIL.Image.LANCZOS)
+            if img.size[1] > 200:
+                img = img.resize((int(200*ratio), 200), resample=PIL.Image.LANCZOS)
+            debug("Rescaled image")
+            self.imgtk = ImageTk.PhotoImage(img)
+            debug("Converted to TKInter compatible format")
+        except:
+            debug("Could not load image")
+            self.reaction_image.pack()
+            self.reaction_image_frame.pack(side=tk.TOP)
+            return None
 
+        self.reaction_image.bind("<Double-1>", self.openChemDraw)
+        self.reaction_image.create_image((0,0), anchor=tk.NW, image=self.imgtk)
         self.reaction_image.pack()
         self.reaction_image_frame.pack(side=tk.TOP)
+        debug("Done")
         
     def destroyStoich(self):
+        debug("Destroying stoichiometry table")
         try:
             self.stoich_frame.destroy()
             self.stoich_table.destroy()
-        except: None
+        except:
+            debug("Failed to destroy stoichiometry table")
+            return None
+        debug("Done")
 
     def loadStoich(self):
         debug("Loading stoichiometry table")
@@ -285,8 +329,34 @@ class eln_window:
         self.stoich_table.pack(side=tk.LEFT)
         self.stoich_frame.pack()
 
-        debug("Stoichiometry table loaded.")
+        debug("Done")
 
+    def destroyAnalytics(self):
+        debug("Destroying analytics section")
+        try:
+            self.analytics_frame.destroy()
+        except:
+            debug("Failed to destroy analytics section")
+            return None
+
+    def loadAnalytics(self):# analytics section TODO
+        debug("Loading Analytics section")
+        self.analytics_frame = Frame(self.right_frame, height=210, width=600, border=frame_border, background="white")
+        self.analytics_frame.pack()
+        debug("Done")
+
+    def rootFocus(self, event):
+        self.updateRightFrame()
+        return None
+    
+    def updateRightFrame(self):
+        self.destroyReactionImage()
+        self.destroyStoich()
+        self.destroyAnalytics()
+        self.loadReactionImage()
+        self.loadStoich()
+        self.loadAnalytics()
+    
 def run():
     global root
     root = Tk()

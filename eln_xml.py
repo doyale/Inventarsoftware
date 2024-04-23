@@ -2,6 +2,8 @@ import xml.etree.ElementTree as ET
 from datetime import datetime
 
 db = "log.xml"
+stoich = "stoich.xml"
+
 
 def addEntry(text: str):
     if text == None or text == "":
