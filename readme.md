@@ -9,9 +9,7 @@ In principle, this program is portable and can be run on any Windows machine cap
 If you are setting up the software for the first time, follow these steps:
 1. Download the latest release - a self extracting executable archive - and move it to the desired install directory.
 2. Run the program. It will prompt you to confirm the extraction directory -> click "Extract"
-3. A Folder with the Name and version number of the software will appear. Navigate to this directory and locate "run.exe". You can either start the program directly by using this file, or you can create a link.
-
-Additionally, if you have been using an older Version of the software before, you will have to copy any data to the new version:
+3. A Folder with the Name and version number of the software will appear. Navigate to this directory and locate "run.exe". You can either start the program directly by using this file, or you can create a link. Additionally, if you have been using an older Version of the software before, you will have to copy any data to the new version:
 4. Navigate to the old install and copy the "ELN" folder including contents to the new install. If no such folder exists you can skip this step.
 5. Navigate to the "dist" folder in the old install and copy "chem_db.xml" to the "dist" folder in the new location (you may need to overwrite an already existing file in the new version)
 6. Verify that all data is present before deleting or archiving the old version.
