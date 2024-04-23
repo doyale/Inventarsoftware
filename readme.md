@@ -15,6 +15,7 @@ If you are setting up the software for the first time, follow these steps:
 6. Verify that all data is present before deleting or archiving the old version.
 
 ## Inventory Management
+![Screenshot of the inventory manager development build](https://i.imgur.com/9Mscz4Q.jpeg)
 
 ## Electronic Lab Notebook (ELN)
 **This feature is inactive development, but it is not yet available.**
