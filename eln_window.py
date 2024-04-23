@@ -45,27 +45,20 @@ class eln_window:
         self.left_frame = Frame(self.master, border=0)
         self.right_frame = Frame(self.master, border=0, width=600)
         # reaction image canvas init
-        self.reaction_image_frame = Frame(self.right_frame, height=200, width=600, border=frame_border)
-        self.reaction_image = Canvas(self.reaction_image_frame, height=200, width=600, background="white")
         # analytics section TODO
         self.analytics_frame = Frame(self.right_frame, height=210, width=600, border=frame_border, background="white")
 
         debug("All elements configured, packing widgets")
-        # Pack widgets in suitable order
-        # button header/banner
+        # Load widgets
         self.loadBanner()
-        # log table
         self.loadLog()
-        # main frames
-        self.left_frame.pack(side=tk.LEFT)
-        self.right_frame.pack(side=tk.RIGHT)
-        # image canvas
-        self.reaction_image.pack()
-        self.reaction_image_frame.pack(side=tk.TOP)
-        # stoich
+        self.loadEntrySection()
+        self.loadReactionImage()
         self.loadStoich()
         # analytics TODO
         self.analytics_frame.pack()
+        self.left_frame.pack(side=tk.LEFT)
+        self.right_frame.pack(side=tk.RIGHT)
 
         debug("Widgets packed, initialization complete.")
 
@@ -100,8 +93,7 @@ class eln_window:
                 ET.ElementTree(root).write("log.xml")
                 os.startfile(f"{os.getcwd()}\\reaction.cdxml") # opens the file in chemdraw, this is just for testing purposes for now.
                 debug("Copying done")
-        debug("New entry created.")
-        
+        debug("New entry created.")  
 
     def loadEntryEvent(self, entry_dir = None):
         debug("Start entry loading")
@@ -110,7 +102,10 @@ class eln_window:
         debug("Entry directory chosen")
         #test code for displaying a chemdraw file as image
         os.chdir(entry_dir)
+        self.destroyLog()
+        self.destroyEntrySection()
         self.loadLog()
+        self.loadEntrySection()
         debug("Changed working directory, parsed log xml")
         m = AllChem.ReactionsFromCDXMLFile("reaction.cdxml")
         debug("parsed cdxml file")
@@ -155,10 +150,24 @@ class eln_window:
         entry_text = self.entry_field.get("1.0",'end-1c')
         if addEntry(entry_text) == True:
             self.loadLog()
-            
+
+    def destroyBanner(self):
+        try:
+            self.left_spacer.destroy()
+            self.new_entry_button.destroy()
+            self.new_entry_spacer.destroy()
+            self.load_entry_button.destroy()
+            self.load_entry_spacer.destroy()
+            self.print_button.destroy()
+            self.print_spacer.destroy()
+            self.refresh_button.destroy()
+            self.refresh_spacer.destroy()
+            self.close_button.destroy()
+            self.banner_frame.destroy()
+        except: None
+
     def loadBanner(self):
         debug("Loading button banner")
-        # Button banner init
         self.banner_frame = Frame(self.left_frame, border=frame_border)
         self.left_spacer = Frame(width=banner_spacer_width, height=banner_height, master=self.banner_frame)
         self.new_entry_button = Button(text=new_entry_btn_text, width=banner_width, height=banner_height, bg=banner_bg, fg=banner_fg, master=self.banner_frame, command=self.newEntryEvent)
@@ -171,7 +180,6 @@ class eln_window:
         self.refresh_spacer = Frame(width=banner_spacer_width, height=banner_height, master=self.banner_frame)
         self.close_button = Button(text=close_btn_text, width=banner_width, height=banner_height, bg=banner_bg, fg=banner_fg, master=self.banner_frame, command=self.closeEvent)
 
-        # pack Button header/banner
         self.left_spacer.pack(side=tk.LEFT)
         self.new_entry_button.pack(side=tk.LEFT)
         self.new_entry_spacer.pack(side=tk.LEFT)
@@ -183,41 +191,47 @@ class eln_window:
         self.refresh_spacer.pack(side=tk.LEFT)
         self.close_button.pack(side=tk.LEFT)
         self.banner_frame.pack(anchor="nw")
-
         debug("Done loading button banner")
 
-    def loadLog(self): #code for loading the log table
-        debug("Loading Log")
+    def destroyLog(self):
         try:
             self.entry_field.delete("1.0", tk.END)
             self.log.destroy()
             self.log_scroll.destroy()
             self.log_frame.destroy()
         except: None
-        # log init
+
+    def loadLog(self): #code for loading the log table
+        debug("Loading Log")
         self.log_frame = Frame(self.left_frame, border=frame_border)
         self.log = Treeview(self.log_frame, columns=("timestamp", "log_string"), show="headings", height=log_height)
         self.log_scroll = Scrollbar(self.log_frame)
-        # log table style
+
         self.log.heading("timestamp", text=timestamp_header_txt)
         self.log.column("timestamp", width=timestamp_width, stretch=False)
         self.log.heading("log_string", text=log_string_header_txt)
         self.log.column("log_string", width=log_string_width, stretch=False)
         entries = readEntries()
+
         for entry, _ in enumerate(entries):
             log_display = entries[entry][0], entries[entry][1]
             self.log.insert('', tk.END, values=log_display)
+
         self.log.pack(side=tk.LEFT)
         self.log_scroll.pack(side=tk.RIGHT, fill = tk.Y)
         self.log_scroll.config(command=self.log.yview)
         self.log.config(yscrollcommand=self.log_scroll.set)
         self.log_frame.pack()
-        # entry field init
+        debug("Done loading log")
+
+    def destroyEntrySection(self):
         try:
             self.entry_field.destroy()
             self.entry_frame.destroy()
             self.entry_spacer.destroy()
         except: None
+
+    def loadEntrySection(self):
         self.entry_frame = Frame(self.left_frame, border=frame_border)
         self.entry_field = Text(self.entry_frame, background=info_bg, font=info_entry_font, width=entry_width, height=2)
         self.entry_spacer = Frame(self.entry_frame, width=banner_spacer_width, height=banner_height)
@@ -227,7 +241,24 @@ class eln_window:
         self.submit_entry_button.pack(side=tk.RIGHT, fill=tk.X)
         self.entry_frame.pack(anchor="w")
 
-        debug("Done loading log")
+    def destroyReactionImage(self):
+        try:
+            self.reaction_image_frame.destroy()
+            self.reaction_image.destroy()
+        except: None
+        
+    def loadReactionImage(self):
+        self.reaction_image_frame = Frame(self.right_frame, height=200, width=600, border=frame_border)
+        self.reaction_image = Canvas(self.reaction_image_frame, height=200, width=600, background="white")
+
+        self.reaction_image.pack()
+        self.reaction_image_frame.pack(side=tk.TOP)
+        
+    def destroyStoich(self):
+        try:
+            self.stoich_frame.destroy()
+            self.stoich_table.destroy()
+        except: None
 
     def loadStoich(self):
         debug("Loading stoichiometry table")
