@@ -18,4 +18,4 @@ If you are setting up the software for the first time, follow these steps:
 
 ## Electronic Lab Notebook (ELN)
 **This feature is inactive development, but it is not yet available.**
-![Screenshot of the ELN development build](https://mega.nz/file/gD4jRYhY#U04WlAo9JxqdQUGnhC-R1VIXkb8tmLc36TtXYHRhyIY)
+![Screenshot of the ELN development build](https://imgur.com/dGNuBwq)
