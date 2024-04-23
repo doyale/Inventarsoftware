@@ -78,7 +78,7 @@ def addEntry(id, name, cas = "-", formula = "-", qty = "-", purity = "-",
     except:
         root = ET.Element("root")
         ET.ElementTree(root).write(db)
-    tree = ET.parse(db)
+        tree = ET.parse(db)
     root = tree.getroot()
 
     #check whether the ID already exists
@@ -130,8 +130,6 @@ def addEntry(id, name, cas = "-", formula = "-", qty = "-", purity = "-",
             chem_prec.text = prec
             chem_ghs.text = ghs
             chem_misc.text = misc
-            print(chem_cas.text)
-
             #write to XML file
             ET.ElementTree(root).write(db)
             print(f"saved entry {id} to the database.")
@@ -141,5 +139,5 @@ def addEntry(id, name, cas = "-", formula = "-", qty = "-", purity = "-",
 #test code
 # teststring = dialog.askstring(title="test", prompt="test chem name:")
 # editEntry("65", chem_name=teststring)
-if __name__ == "__main__":
-    deleteEntry(11)
+# if __name__ == "__main__":
+#     deleteEntry(11)
