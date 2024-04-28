@@ -7,11 +7,12 @@ https://docs.python.org/3/library/xml.etree.elementtree.html
 import xml.etree.ElementTree as ET
 import tkinter.messagebox as popup
 import tkinter.simpledialog as dialog
+import os
 
 #Language variables
 id_exists_error = f"The ID you are trying to add already exists. ID: "
 
-db = "chem_db.xml"
+db = f"{os.path.dirname(os.path.realpath(__file__))}\chem_db.xml"
 
 def editEntry(id, **kwargs):
     tree = ET.parse(db)
@@ -58,7 +59,7 @@ def readEntries(): #reads all entries from the ddatabase
         data_total.append(data)
     return data_total
 
-def readEntry(chem_id:str):
+def readEntry(chem_id: str):
     #Search for a single entry in the chem database.
     entries = readEntries()
     for i, _ in enumerate(entries):

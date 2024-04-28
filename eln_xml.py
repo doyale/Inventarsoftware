@@ -2,6 +2,7 @@ import xml.etree.ElementTree as ET
 from datetime import datetime
 import tkinter.messagebox as popup
 import tkinter.simpledialog as dialog
+from debug import debug
 
 db = "log.xml"
 stoich = "stoich.xml"
@@ -29,7 +30,7 @@ def addEntry(text: str):
     return True
 
 def addStoich(id: str = "-", name: str = "-", M: str = "-", n: str = "-", m: str = "-", V: str = "-", eq: str = "-", notes: str = "-"):
-    print("Adding entry")
+    debug("Adding entry")
     try:
         tree = ET.parse(stoich)
     except:
@@ -85,7 +86,7 @@ def readEntries(): #reads all entries from the database
     return data_total
 
 def readStoich():
-    print("reading stoich")
+    debug("reading stoich")
     try:
         tree = ET.parse(stoich)
     except:
@@ -98,3 +99,52 @@ def readStoich():
             data.append(grandchild.text)
         data_total.append(data)
     return data_total
+
+def readStoichSingle(id):
+    debug(f"Reading single stoich table entry (ID: {id})")
+    tree = ET.parse(stoich)
+    root = tree.getroot()
+    entries = []
+    for chem_id in root.iter("chem_id"):
+        if chem_id.text == str(id):
+            for _, info in enumerate(chem_id):
+                entries.append(info.text)
+            return entries
+
+def deleteStoich(id):
+    tree = ET.parse(stoich)
+    root = tree.getroot()
+   
+    chem_id = None
+    for chem_id in root.iter("chem_id"):
+        if chem_id.text == str(id):
+             if popup.askyesno(f"Delete Entry {id}?", f"Do you really want to delete entry {id} ({chem_id[0].text})?") is True:
+                debug(f"Deleting entry {chem_id.text}.")
+                root.remove(chem_id)
+                break
+             else:
+                debug(f"Entry {id} not deleted: Canceled by user.")
+                break
+    tree.write(stoich)
+
+def editStoich(id: str = "-", **kwargs):
+    debug(f"Editing entry {id}")
+    try:
+        tree = ET.parse(stoich)
+    except:
+        return None
+    root = tree.getroot()
+    current_id = None
+    for current_id in root.iter("chem_id"): #finds entry with the selected id
+        if current_id.text == str(id):
+            print(current_id)
+            break
+    if current_id != None:
+        for key, value in kwargs.items():
+            print(f"key = {key}, value = {value}")
+            print(current_id.find(key).text)
+            for i in current_id.iter(key):
+                print(i)
+                if i.tag == key:
+                    i.text = value
+    tree.write(stoich)

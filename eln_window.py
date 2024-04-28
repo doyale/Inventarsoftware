@@ -7,10 +7,12 @@ import shutil
 from PIL import ImageTk
 import PIL
 from rdkit.Chem import AllChem, Draw
-from eln_xml import addEntry, readEntries, addStoich, readStoich
+from eln_xml import *
+import data_management
 import xml.etree.ElementTree as ET
 from debug import debug
 import pyautogui
+from tkinter.font import nametofont
 
 # Style Variables
 banner_height = 2
@@ -20,15 +22,14 @@ banner_fg = "black"
 banner_spacer_width = 3
 frame_border = 5
 log_height = 35
-timestamp_width = 112
-log_string_width = 600
+timestamp_width = 128
+log_string_width = 580
 info_bg = "white"
-info_entry_font = ("Seoge UI", 11)
-entry_width = int(log_string_width/8)
+info_entry_font = ("Seoge UI", 9)
+entry_width = int((log_string_width+timestamp_width)/8)
 stoich_height = 9
 reaction_height = 350
 stoich_button_width = 27
-info_entry_font = ("Seoge UI", 11)
 
 # Language Variables
 new_entry_btn_text = "New Entry"
@@ -43,9 +44,13 @@ submit_btn_text = "Submit Entry"
 stoich_btn_add_txt = "Add reagent"
 stoich_btn_remove_txt = "Remove selected reagent"
 stoich_btn_edit_txt = "Edit selected reagent"
+btn_get_from_inventory_text = "Get from inventory"
 
 class eln_window:
     def __init__(self, master):
+        nametofont("TkHeadingFont").configure(family=info_entry_font[0], size=info_entry_font[1])
+        nametofont("TkDefaultFont").configure(family=info_entry_font[0], size=info_entry_font[1])
+        nametofont("TkDefaultFont").configure(family=info_entry_font[0], size=info_entry_font[1])
         debug("Initialization start")
         self.master = master
         self.left_frame = Frame(self.master, border=0, width=2000)
@@ -387,10 +392,19 @@ class eln_window:
         self.loadStoichWindowLayout("add")
     
     def stoichRemoveEvent(self):
-        debug("Removing entry from stoichiometry table")
+        current_id = self.stoich_table.item(self.stoich_table.selection())["values"][0]
+        current_name = self.stoich_table.item(self.stoich_table.selection())["values"][1]
+        debug(f"Removing entry {current_id} ({current_name}) from stoichiometry table")
+        deleteStoich(current_id)
+        self.updateRightFrame()
 
     def stoichEditEvent(self):
         debug("Editing entry in stoichiometry table")
+        try:
+            self.stoich_table.item(self.stoich_table.selection())["values"][0]
+        except:
+            messagebox.showerror("No Item Selected", "No item from the stoichiometry table was selected.")
+            return None
         self.stoich_edit_window = Toplevel()
         self.stoich_edit_window.title("Edit reagent data")
         mousepos = pyautogui.position()
@@ -405,26 +419,49 @@ class eln_window:
         else:
             self.stoich_frame = Frame(master=self.stoich_edit_window, background=info_bg)
         self.stoich_label_frame = Frame(border=5, master=self.stoich_frame, background=info_bg)
-        self.id_label = Label(text="ID", master=self.stoich_label_frame, background=info_bg)
-        self.name_label = Label(text="Substance", master=self.stoich_label_frame, background=info_bg)
-        self.M_label = Label(text="M [g/mol]", master=self.stoich_label_frame, background=info_bg)
-        self.n_label = Label(text="n [mol]", master=self.stoich_label_frame, background=info_bg)
-        self.m_label = Label(text="m [g]", master=self.stoich_label_frame, background=info_bg)
-        self.V_label = Label(text="V [ml]", master=self.stoich_label_frame, background=info_bg)
-        self.eq_label = Label(text="eq.", master=self.stoich_label_frame, background=info_bg)
-        self.notes_label = Label(text="Notes", master=self.stoich_label_frame, background=info_bg)
+        self.id_label = Label(text="ID", master=self.stoich_label_frame, background=info_bg, font=info_entry_font)
+        self.name_label = Label(text="Substance", master=self.stoich_label_frame, background=info_bg, font=info_entry_font)
+        self.M_label = Label(text="M [g/mol]", master=self.stoich_label_frame, background=info_bg, font=info_entry_font)
+        self.n_label = Label(text="n [mol]", master=self.stoich_label_frame, background=info_bg, font=info_entry_font)
+        self.m_label = Label(text="m [g]", master=self.stoich_label_frame, background=info_bg, font=info_entry_font)
+        self.V_label = Label(text="V [ml]", master=self.stoich_label_frame, background=info_bg, font=info_entry_font)
+        self.eq_label = Label(text="eq.", master=self.stoich_label_frame, background=info_bg, font=info_entry_font)
+        self.notes_label = Label(text="Notes", master=self.stoich_label_frame, background=info_bg, font=info_entry_font)
 
         self.stoich_entry_frame = Frame(border=5, master=self.stoich_frame, background=info_bg)
-        self.id_entry = Entry(master=self.stoich_entry_frame, background=info_bg, font=info_entry_font, width=10)
-        self.name_entry = Entry(master=self.stoich_entry_frame, background=info_bg, font=info_entry_font, width=10)
-        self.M_entry = Entry(master=self.stoich_entry_frame, background=info_bg, font=info_entry_font, width=10)
-        self.n_entry = Entry(master=self.stoich_entry_frame, background=info_bg, font=info_entry_font, width=10)
-        self.m_entry = Entry(master=self.stoich_entry_frame, background=info_bg, font=info_entry_font, width=10)
-        self.V_entry = Entry(master=self.stoich_entry_frame, background=info_bg, font=info_entry_font, width=10)
-        self.eq_entry = Entry(master=self.stoich_entry_frame, background=info_bg, font=info_entry_font, width=10)
-        self.notes_entry = Entry(master=self.stoich_entry_frame, background=info_bg, font=info_entry_font, width=10)
+        self.id_entry = Entry(master=self.stoich_entry_frame, background=info_bg, font=info_entry_font, width=10, border=2)
+        self.name_entry = Entry(master=self.stoich_entry_frame, background=info_bg, font=info_entry_font, width=10, border=2)
+        self.M_entry = Entry(master=self.stoich_entry_frame, background=info_bg, font=info_entry_font, width=10, border=2)
+        self.n_entry = Entry(master=self.stoich_entry_frame, background=info_bg, font=info_entry_font, width=10, border=2)
+        self.m_entry = Entry(master=self.stoich_entry_frame, background=info_bg, font=info_entry_font, width=10, border=2)
+        self.V_entry = Entry(master=self.stoich_entry_frame, background=info_bg, font=info_entry_font, width=10, border=2)
+        self.eq_entry = Entry(master=self.stoich_entry_frame, background=info_bg, font=info_entry_font, width=10, border=2)
+        self.notes_entry = Entry(master=self.stoich_entry_frame, background=info_bg, font=info_entry_font, width=10, border=2)
+
+        if not master == "add":
+            current_id = self.stoich_table.item(self.stoich_table.selection())["values"][0]
+            current_entry_raw = readStoichSingle(current_id)
+            print(current_entry_raw)
+            current_entry = []
+            for item in current_entry_raw: #replaces all None Type elements with ""
+                if type(item) is not str:
+                    current_entry.append("")
+                else:
+                    current_entry.append(item)
+            print(current_entry)
+            self.id_entry.insert(0, current_id)
+            self.name_entry.insert(0, current_entry[0])
+            self.M_entry.insert(0, current_entry[1])
+            self.n_entry.insert(0, current_entry[2])
+            self.m_entry.insert(0, current_entry[3])
+            self.V_entry.insert(0, current_entry[4])
+            self.eq_entry.insert(0, current_entry[5])
+            self.notes_entry.insert(0, current_entry[6])
+
         button_text = None
         if master == "add":
+            self.get_from_inventory = tk.Button(master=self.stoich_add_window, background=banner_bg, foreground=banner_fg, text=btn_get_from_inventory_text, width=22, pady=10, command=self.getFromInventoryEvent)
+            self.get_from_inventory.pack(side=tk.TOP)
             button_text = "Add substance entry"
             self.save_stoich_entry_spacer = tk.Frame(master=self.stoich_add_window, height=5)
             self.save_stoich_entry_button = tk.Button(master=self.stoich_add_window, background=banner_bg, foreground=banner_fg, text=button_text, width=22, pady=10, command=self.addStoichEntryEvent)
@@ -433,7 +470,6 @@ class eln_window:
             button_text = "Edit substance entry"
             self.save_stoich_entry_button = tk.Button(master=self.stoich_edit_window, background=banner_bg, foreground=banner_fg, text=button_text, width=22, pady=10, command=self.editStoichEntryEvent)
         
-
         self.id_label.pack(anchor="e")
         self.name_label.pack(anchor="e")
         self.M_label.pack(anchor="e")
@@ -451,7 +487,6 @@ class eln_window:
         self.V_entry.pack()
         self.eq_entry.pack()
         self.notes_entry.pack()
-
         self.stoich_label_frame.pack(side=tk.LEFT)
         self.stoich_entry_frame.pack(side=tk.LEFT)
         self.save_stoich_entry_button.pack(side=tk.BOTTOM)
@@ -459,6 +494,22 @@ class eln_window:
         self.stoich_frame.pack()
         
         return None
+
+    def getFromInventoryEvent(self):
+        debug("Getting data from inventory")
+        inv_id = simpledialog.askstring("Provide ID", "Please provide the ID of the substance you want to use in this entry:")
+        if inv_id != None:
+            try:
+                data = data_management.readEntry(inv_id)
+                debug(f"Fetched data: {data}")
+                self.id_entry.insert(0, data[0])
+                self.name_entry.insert(0, data[1])
+                self.M_entry.insert(0, data[8][:-6]) # removes g/mol unit
+            except:
+                debug("Could not load from inventory. Does the provided ID exist?")
+                return None
+        else:
+            debug("No valid ID was provided.")
 
     def addStoichEntryEvent(self):
         addStoich(id=self.id_entry.get(),
@@ -474,7 +525,14 @@ class eln_window:
         return None
     
     def editStoichEntryEvent(self):
-        print("test")
+        editStoich(id=self.id_entry.get(),
+                chem_name=self.name_entry.get(),
+                M=self.M_entry.get(),
+                n=self.n_entry.get(),
+                m=self.m_entry.get(),
+                V=self.V_entry.get(),
+                eq=self.eq_entry.get(),
+                notes=self.notes_entry.get())
         self.stoich_edit_window.destroy()
         self.updateRightFrame()
         return None
@@ -484,7 +542,7 @@ def run():
     root = Tk()
     root.title(eln_window_title)
     root.iconbitmap("icon.ico")
-    root.geometry("1360x850+10+10")
+    root.geometry("+10+10")
     root.resizable(width=False, height=False)
     eln_window(root) #no idea what this does but it's necessary
     root.mainloop()
