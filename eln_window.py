@@ -28,10 +28,10 @@ log_string_width = 580
 info_bg = "white"
 info_entry_font = ("Seoge UI", 9)
 entry_width = int((log_string_width+timestamp_width)/8)
-stoich_height = 9
+stoich_height = 6
 reaction_height = 200
 stoich_button_width = 27
-analytics_height = 440
+analytics_height = 320
 
 # Language Variables
 new_entry_btn_text = "New Entry"
@@ -233,7 +233,7 @@ class eln_window:
     def loadLog(self): #code for loading the log table
         debug("Loading Log")
         style = ttk.Style(root)
-        style.configure("log.Treeview", rowheight=40)
+        style.configure("log.Treeview", rowheight=30)
         self.log_frame = Frame(self.left_frame, border=frame_border)
         self.log = Treeview(self.log_frame, columns=("timestamp", "log_string"), show="headings", height=log_height, style="log.Treeview")
         self.log_scroll = Scrollbar(self.log_frame)
@@ -262,10 +262,12 @@ class eln_window:
     def displayLogImage(self, event):
         current = self.log.focus()
         debug(f"{current} selected.")
-        for index, items in enumerate(self.log_items_images):
-            if items[0] == current:
-                self.destroyAnalytics()
-                self.loadAnalytics(items[2])
+        try:
+            for index, items in enumerate(self.log_items_images):
+                if items[0] == current:
+                    self.destroyAnalytics()
+                    self.loadAnalytics(items[2])
+        except: pass
 
     def loadLogImages(self, log_items): # takes a list of tuples containing a treeview row item and a timestamp and returns the same structure with an image object attached if an image with the same name as the timestamp exists in the working directory
         try:
@@ -365,9 +367,9 @@ class eln_window:
         self.stoich_frame = Frame(self.right_frame, height=200, width=600, border=frame_border)
         self.stoich_table = Treeview(self.stoich_frame, columns=("ID", "Substance", "M", "n", "m", "V", "eq.", "notes"), show="headings", height=stoich_height)
         self.stoich_button_frame = Frame(self.stoich_frame)
-        self.stoich_button_add = Button(self.stoich_button_frame, text=stoich_btn_add_txt, width=stoich_button_width, height=2, bg=banner_bg, fg=banner_fg, command=self.stoichAddEvent)
-        self.stoich_button_edit = Button(self.stoich_button_frame, text=stoich_btn_edit_txt, width=stoich_button_width, height=2, bg=banner_bg, fg=banner_fg, command=self.stoichEditEvent)
-        self.stoich_button_remove = Button(self.stoich_button_frame, text=stoich_btn_remove_txt, width=stoich_button_width, height=2, bg=banner_bg, fg=banner_fg, command=self.stoichRemoveEvent)
+        self.stoich_button_add = Button(self.stoich_button_frame, text=stoich_btn_add_txt, width=stoich_button_width, height=1, bg=banner_bg, fg=banner_fg, command=self.stoichAddEvent)
+        self.stoich_button_edit = Button(self.stoich_button_frame, text=stoich_btn_edit_txt, width=stoich_button_width, height=1, bg=banner_bg, fg=banner_fg, command=self.stoichEditEvent)
+        self.stoich_button_remove = Button(self.stoich_button_frame, text=stoich_btn_remove_txt, width=stoich_button_width, height=1, bg=banner_bg, fg=banner_fg, command=self.stoichRemoveEvent)
         # stoich table style:
         self.stoich_table.heading("ID", text="ID")
         self.stoich_table.heading("Substance", text="Substance")
@@ -411,14 +413,14 @@ class eln_window:
 
     def loadAnalytics(self, analytics_image = None):# analytics section TODO
         debug("Loading Analytics section")
-        self.analytics_frame = Frame(self.right_frame, height=analytics_height, width=600, border=0, padx=0, pady=0, background="white")
+        self.analytics_frame = Frame(self.right_frame, height=analytics_height, width=590, border=0, padx=0, pady=0, background="white")
         self.analytics_scrollx = Scrollbar(self.analytics_frame, orient="horizontal")
         self.analytics_scrolly = Scrollbar(self.analytics_frame)
         if analytics_image != None:
-            self.analytics_image = Canvas(self.analytics_frame, height=analytics_height, width=600, background="white", scrollregion=(0,0,analytics_image.width(),analytics_image.height()))
+            self.analytics_image = Canvas(self.analytics_frame, height=analytics_height, width=590, background="white", scrollregion=(0,0,analytics_image.width(),analytics_image.height()))
             self.analytics_image.create_image((int(analytics_image.width()/2),int(analytics_image.height()/2)), anchor=tk.CENTER, image=analytics_image)
         else:
-            self.analytics_image = Canvas(self.analytics_frame, height=analytics_height, width=600, background="white", scrollregion=(0,0,0,0))
+            self.analytics_image = Canvas(self.analytics_frame, height=analytics_height, width=590, background="white", scrollregion=(0,0,0,0))
         self.analytics_scrollx.pack(side=tk.BOTTOM, fill = tk.X)
         self.analytics_scrollx.config(command=self.analytics_image.xview)
         self.analytics_scrolly.pack(side=tk.RIGHT, fill = tk.Y)
