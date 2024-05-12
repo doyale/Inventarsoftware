@@ -4,7 +4,7 @@ import tkinter.ttk as ttk
 from tkinter.ttk import Treeview
 import os
 import shutil
-from PIL import ImageTk
+from PIL import ImageTk, Image
 import PIL
 from rdkit.Chem import AllChem, Draw
 from eln_xml import *
@@ -13,6 +13,7 @@ import xml.etree.ElementTree as ET
 from debug import debug
 import pyautogui
 from tkinter.font import nametofont
+import shutil
 
 # Style Variables
 banner_height = 2
@@ -21,21 +22,22 @@ banner_bg = "light blue"
 banner_fg = "black"
 banner_spacer_width = 3
 frame_border = 5
-log_height = 35
+log_height = 20
 timestamp_width = 128
 log_string_width = 580
 info_bg = "white"
 info_entry_font = ("Seoge UI", 9)
 entry_width = int((log_string_width+timestamp_width)/8)
 stoich_height = 9
-reaction_height = 350
+reaction_height = 200
 stoich_button_width = 27
+analytics_height = 440
 
 # Language Variables
 new_entry_btn_text = "New Entry"
 load_entry_btn_text = "Load Entry"
 print_btn_text = "Print to PDF"
-close_btn_text = "Save and Exit"
+add_image_btn_text = "Attach png Image"
 refresh_btn_text = "Reload File"
 eln_window_title = "ELN"
 timestamp_header_txt = "Timestamp"
@@ -139,12 +141,24 @@ class eln_window:
         debug("Window killed, restarting...")
         run()
 
-    def closeEvent(self):
-        debug("Closing...")
+    def attachImageEvent(self):
+        debug("Attaching Image to selected entry.")
+        current = self.log.focus()
+        timestamp = ""
         try:
-            root.quit()
-            root.destroy()
-        except: None
+            for index, item in enumerate(self.log_items_images):
+                if item[0] == current:
+                    timestamp = item[1]
+                    break
+            else:
+                return None
+        except:
+            debug("Could not find selected entry.")
+            return None
+        file = filedialog.askopenfilename(filetypes=[("PNG Image Files", "*.png")])
+        print(file)
+        print(f"{os.getcwd()}\{timestamp.replace(':', '_')}.png".replace("\\", "/"))
+        shutil.copyfile(src=file, dst=f"{os.getcwd()}\{timestamp.replace(':', '_')}.png".replace("\\", "/"))
 
     def submitEvent(self):
         debug("Submitting Entry")
@@ -170,7 +184,7 @@ class eln_window:
             self.print_spacer.destroy()
             self.refresh_button.destroy()
             self.refresh_spacer.destroy()
-            self.close_button.destroy()
+            self.add_image_button.destroy()
             self.banner_frame.destroy()
         except:
             debug("Failed to destroy button banner")
@@ -189,7 +203,7 @@ class eln_window:
         self.print_spacer = Frame(width=banner_spacer_width, height=banner_height, master=self.banner_frame)
         self.refresh_button = Button(text=refresh_btn_text, width=banner_width, height=banner_height, bg=banner_bg, fg=banner_fg, master=self.banner_frame, command=self.refreshEvent)
         self.refresh_spacer = Frame(width=banner_spacer_width, height=banner_height, master=self.banner_frame)
-        self.close_button = Button(text=close_btn_text, width=banner_width, height=banner_height, bg=banner_bg, fg=banner_fg, master=self.banner_frame, command=self.closeEvent)
+        self.add_image_button = Button(text=add_image_btn_text, width=banner_width, height=banner_height, bg=banner_bg, fg=banner_fg, master=self.banner_frame, command=self.attachImageEvent)
 
         self.left_spacer.pack(side=tk.LEFT)
         self.new_entry_button.pack(side=tk.LEFT)
@@ -200,7 +214,7 @@ class eln_window:
         self.print_spacer.pack(side=tk.LEFT)
         self.refresh_button.pack(side=tk.LEFT)
         self.refresh_spacer.pack(side=tk.LEFT)
-        self.close_button.pack(side=tk.LEFT)
+        self.add_image_button.pack(side=tk.LEFT)
         self.banner_frame.pack(anchor="nw")
         debug("Done")
 
@@ -218,26 +232,58 @@ class eln_window:
 
     def loadLog(self): #code for loading the log table
         debug("Loading Log")
+        style = ttk.Style(root)
+        style.configure("log.Treeview", rowheight=40)
         self.log_frame = Frame(self.left_frame, border=frame_border)
-        self.log = Treeview(self.log_frame, columns=("timestamp", "log_string"), show="headings", height=log_height)
+        self.log = Treeview(self.log_frame, columns=("timestamp", "log_string"), show="headings", height=log_height, style="log.Treeview")
         self.log_scroll = Scrollbar(self.log_frame)
 
+        self.log.column("#0", width=41)
         self.log.heading("timestamp", text=timestamp_header_txt)
         self.log.column("timestamp", width=timestamp_width, stretch=False)
         self.log.heading("log_string", text=log_string_header_txt)
         self.log.column("log_string", width=log_string_width, stretch=False)
         entries = readEntries()
-
+        log_items = []
         for entry, _ in enumerate(entries):
             log_display = entries[entry][0], entries[entry][1]
-            self.log.insert('', tk.END, values=log_display)
+            log_items.append((self.log.insert('', tk.END, values=log_display), entries[entry][0]))
 
+        self.log_items_images = self.loadLogImages(log_items)
+        
         self.log.pack(side=tk.LEFT)
+        self.log.bind("<ButtonRelease-1>", self.displayLogImage)
         self.log_scroll.pack(side=tk.RIGHT, fill = tk.Y)
         self.log_scroll.config(command=self.log.yview)
         self.log.config(yscrollcommand=self.log_scroll.set)
         self.log_frame.pack()
         debug("Done")
+
+    def displayLogImage(self, event):
+        current = self.log.focus()
+        debug(f"{current} selected.")
+        for index, items in enumerate(self.log_items_images):
+            if items[0] == current:
+                self.destroyAnalytics()
+                self.loadAnalytics(items[2])
+
+    def loadLogImages(self, log_items): # takes a list of tuples containing a treeview row item and a timestamp and returns the same structure with an image object attached if an image with the same name as the timestamp exists in the working directory
+        try:
+            log_items_images = []
+            for index, log_item in enumerate(log_items):
+                image_name_fn = log_item[1].replace(":", "_")
+                debug(f"Checking for image {image_name_fn}.png")
+                if os.path.isfile(f"{image_name_fn}.png"):
+                    debug(f"{image_name_fn}.png exists, loading...")
+                    with Image.open(f"{image_name_fn}.png") as image:
+                        tkimage = ImageTk.PhotoImage(image)
+                        log_items_images.append((log_item[0], log_item[1], tkimage))
+                else:
+                    debug(f"{image_name_fn}.png does not exist...")
+                    log_items_images.append((log_item[0], log_item[1], None))
+            return log_items_images
+        except:
+            return None
 
     def destroyEntrySection(self):
         debug("Destroying entry section")
@@ -358,14 +404,28 @@ class eln_window:
         debug("Destroying analytics section")
         try:
             self.analytics_frame.destroy()
+            self.analytics_scrolly.destroy()
         except:
             debug("Failed to destroy analytics section")
             return None
 
-    def loadAnalytics(self):# analytics section TODO
+    def loadAnalytics(self, analytics_image = None):# analytics section TODO
         debug("Loading Analytics section")
-        self.analytics_frame = Frame(self.right_frame, height=210, width=600, border=frame_border, background="white")
+        self.analytics_frame = Frame(self.right_frame, height=analytics_height, width=600, border=0, padx=0, pady=0, background="white")
+        self.analytics_scrollx = Scrollbar(self.analytics_frame, orient="horizontal")
+        self.analytics_scrolly = Scrollbar(self.analytics_frame)
+        if analytics_image != None:
+            self.analytics_image = Canvas(self.analytics_frame, height=analytics_height, width=600, background="white", scrollregion=(0,0,analytics_image.width(),analytics_image.height()))
+            self.analytics_image.create_image((int(analytics_image.width()/2),int(analytics_image.height()/2)), anchor=tk.CENTER, image=analytics_image)
+        else:
+            self.analytics_image = Canvas(self.analytics_frame, height=analytics_height, width=600, background="white", scrollregion=(0,0,0,0))
+        self.analytics_scrollx.pack(side=tk.BOTTOM, fill = tk.X)
+        self.analytics_scrollx.config(command=self.analytics_image.xview)
+        self.analytics_scrolly.pack(side=tk.RIGHT, fill = tk.Y)
+        self.analytics_scrolly.config(command=self.analytics_image.yview)
+        self.analytics_image.config(xscrollcommand=self.analytics_scrollx.set,yscrollcommand=self.analytics_scrolly.set)
         self.analytics_frame.bind("<FocusIn>", self.rootFocus)
+        self.analytics_image.pack(side=tk.LEFT)
         self.analytics_frame.pack()
         debug("Done")
 

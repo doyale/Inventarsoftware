@@ -2,7 +2,7 @@ import time
 import os
 
 global debug_print, ref_time
-debug_print = True # set to true to display debug messages
+debug_print = False # set to true to display debug messages
 ref_time = round(time.time() * 1000) #time in micros at program start
 
 def debug(text: str): #debug break points (only if enabled)
