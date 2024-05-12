@@ -2,5 +2,4 @@
 set "pvar=%cd%"
 echo %pvar%
 cd dist
-python.exe "%pvar%\UI_main.py"
-pause
+python.exe "%pvar%\run.py"

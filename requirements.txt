@@ -7,3 +7,4 @@ xml.etree.ElementTree
 web
 pandas
 reportlab
+rdkit
