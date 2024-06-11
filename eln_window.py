@@ -22,16 +22,17 @@ banner_bg = "light blue"
 banner_fg = "black"
 banner_spacer_width = 3
 frame_border = 5
-log_height = 20
+log_height = 25
 timestamp_width = 128
 log_string_width = 580
 info_bg = "white"
-info_entry_font = ("Seoge UI", 9)
-entry_width = int((log_string_width+timestamp_width)/8)
+info_entry_font = ("Seoge UI", 8)
+entry_width = 83
 stoich_height = 6
 reaction_height = 200
-stoich_button_width = 27
-analytics_height = 320
+stoich_button_width = 24
+analytics_height = 450
+image_attached_color = "pale turquoise"
 
 # Language Variables
 new_entry_btn_text = "New Entry"
@@ -236,6 +237,7 @@ class eln_window:
         style.configure("log.Treeview", rowheight=30)
         self.log_frame = Frame(self.left_frame, border=frame_border)
         self.log = Treeview(self.log_frame, columns=("timestamp", "log_string"), show="headings", height=log_height, style="log.Treeview")
+        self.log.tag_configure("image_attached", background=image_attached_color)
         self.log_scroll = Scrollbar(self.log_frame)
 
         self.log.column("#0", width=41)
@@ -273,6 +275,7 @@ class eln_window:
         try:
             log_items_images = []
             for index, log_item in enumerate(log_items):
+                #print(index, log_item)
                 image_name_fn = log_item[1].replace(":", "_")
                 debug(f"Checking for image {image_name_fn}.png")
                 if os.path.isfile(f"{image_name_fn}.png"):
@@ -280,6 +283,7 @@ class eln_window:
                     with Image.open(f"{image_name_fn}.png") as image:
                         tkimage = ImageTk.PhotoImage(image)
                         log_items_images.append((log_item[0], log_item[1], tkimage))
+                        self.log.item(log_item[0], tags="image_attached")
                 else:
                     debug(f"{image_name_fn}.png does not exist...")
                     log_items_images.append((log_item[0], log_item[1], None))
